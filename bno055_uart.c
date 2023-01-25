@@ -64,7 +64,8 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     // Byte 3: Register Address
     // Byte 4: Number of bytes to be written
     // Byte 5 -> n + 4: Bytes to be written
-    uint8_t cmd[4 + nBytes];
+    int cmdSize = 4 + nBytes;
+    uint8_t cmd[cmdSize];
 
     cmd[0] = 0xAA;
     cmd[1] = 0x00;
@@ -78,7 +79,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     // Send write command over serial, only allow for
     // 5 attempts (ignoring bus errors)
     uint8_t resp[2];
-    if (send_serial_cmd(cmd, 4 + nBytes, resp, 2, ack) == -1)
+    if (send_serial_cmd(cmd, cmdSize, resp, 2, ack) == -1)
     {
         fprintf(stderr, "Error sending serial command\n");
         return -1;
@@ -127,8 +128,9 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
-    uint8_t resp[2 + nBytes];
-    if (send_serial_cmd(cmd, 4, resp, 2 + nBytes, false) == -1)
+    int cmdSize = 2 + nBytes;
+    uint8_t resp[cmdSize];
+    if (send_serial_cmd(cmd, 4, resp, cmdSize, false) == -1)
     {
         fprintf(stderr, "Error sending serial command\n");
         return -1;
@@ -137,7 +139,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     // Process the response we received
     if (resp[0] != 0xBB)
     {
-        fprintf(stderr, "Failed to read register: response status =  %x", resp[1]);
+        fprintf(stderr, "Failed to read register: response status =  %x\n", resp[1]);
         return -1;
     }
 
@@ -162,7 +164,10 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 uint8_t read_byte(bno055_register_t addr)
 {
     uint8_t readByte[1];
-    read_bytes(addr, readByte, 1);
+    if (read_bytes(addr, readByte, 1) == -1)
+    {
+        fprintf(stderr, "Error reading single byte\n");
+    }
 
     // Ew no error checking
     return readByte[0];

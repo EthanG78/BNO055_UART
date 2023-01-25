@@ -7,7 +7,7 @@ LIBS = -lc -lwiringPi
 BINS = libbno055_uart.so
 
 ifeq ($(PREFIX),)
-    PREFIX := /usr/local
+    PREFIX := /usr
 endif
 
 release: CFLAGS = $(BASEFLAGS)
