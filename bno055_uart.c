@@ -162,7 +162,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 uint8_t read_byte(bno055_register_t addr)
 {
     uint8_t readByte[1];
-    read_bytes(addr, readByte, 1)
+    read_bytes(addr, readByte, 1);
 
     // Ew no error checking
     return readByte[0];
@@ -179,7 +179,10 @@ int bno_set_mode(bno055_opmode_t mode)
     int success = write_byte(BNO055_OPR_MODE_ADDR, mode, true);
 
     // Sleep 30 miliseconds
-    usleep(30000);
+    struct timespec ts;
+    ts.tv_sec = 30 / 1000;
+    ts.tv_nsec = (30 % 1000) * 1000000;
+    nanosleep(&ts, NULL);
 
     if (success == -1)
     {
@@ -244,7 +247,10 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     }
 
     // Wait 650ms after reset
-    usleep(650000);
+    struct timespec ts;
+    ts.tv_sec = 650 / 1000;
+    ts.tv_nsec = (650 % 1000) * 1000000;
+    nanosleep(&ts, NULL);
 
     if (write_byte(BNO055_PWR_MODE_ADDR, (uint8_t)POWER_MODE_NORMAL, true) == -1)
     {

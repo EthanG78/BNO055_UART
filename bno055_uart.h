@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <time.h>
 #include <string.h>
 
 #include <wiringPi.h>
