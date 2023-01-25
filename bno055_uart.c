@@ -128,9 +128,9 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
-    int cmdSize = 2 + nBytes;
-    uint8_t resp[cmdSize];
-    if (send_serial_cmd(cmd, 4, resp, cmdSize, false) == -1)
+    int respSize = 2 + nBytes;
+    uint8_t resp[respSize];
+    if (send_serial_cmd(cmd, 4, resp, respSize, true) == -1)
     {
         fprintf(stderr, "Error sending serial command\n");
         return -1;
