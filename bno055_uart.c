@@ -150,7 +150,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     }
 
     // Copy response bytes into bytes value
-    memcpy(bytes, resp[2], nBytes);
+    memcpy(bytes, &resp[2], nBytes);
 
     return 1;
 }
@@ -162,12 +162,10 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 uint8_t read_byte(bno055_register_t addr)
 {
     uint8_t readByte[1];
-    if (read_bytes(addr, readByte, 1) != -1)
-    {
-        return readByte[0];
-    }
+    read_bytes(addr, readByte, 1)
 
-    return NULL;
+    // Ew no error checking
+    return readByte[0];
 }
 
 // Sets the operation mode of the BNO055 based
@@ -207,8 +205,6 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
-    int success = 0;
-
     // First send a thow-away command and ignore any response
     // just to make sure the BNO is in a good state and ready to accept
     // commands (this seems to be necessary after a hard power down).
@@ -228,12 +224,12 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 
     // Check the device ID
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
-    if (bnoId == NULL || bnoId != BNO055_ID)
+    if (bnoId != BNO055_ID)
     {
         // Wait and try again
         sleep(1);
         bnoId = read_byte(BNO055_CHIP_ID_ADDR);
-        if (bnoId == NULL || bnoId != BNO055_ID)
+        if (bnoId != BNO055_ID)
         {
             fprintf(stderr, "Error initializing BNO055\n");
             return -1;
