@@ -23,5 +23,5 @@ clean:
 	rm -f $(BINS)
 
 install: libbno055_uart.so
-    install -m 644 libbno055_uart.so $(PREFIX)/lib/
+	install -m 644 libbno055_uart.so $(PREFIX)/lib/
 	install -m 644 bno055_uart.h $(PREFIX)/include/
