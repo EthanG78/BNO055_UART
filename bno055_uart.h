@@ -261,7 +261,7 @@ typedef enum
 
 int serial_fp = -1;
 
-int bno_init(char *serialPort, bno055_opmode_t mode)
+int bno_init(char *serialPort, bno055_opmode_t mode);
 
 int bno_set_mode(bno055_opmode_t mode);
 
