@@ -8,9 +8,9 @@
 
 int main()
 {
-    if (int bno_init("/dev/serial0", OPERATION_MODE_NDOF) == -1)
+    if (bno_init("/dev/serial0", OPERATION_MODE_NDOF) == -1)
     {
-        return 1
+        return 1;
     }
 
     fprintf(stdout, "SUCCESSFULLY INITIALIZED BNO055\n");
