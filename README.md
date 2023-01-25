@@ -9,6 +9,13 @@ The BNO055 presents an easy to use, low cost solution to obtain absolute orienta
 ## Dependencies
 This driver uses the [unofficial fork of WiringPi](https://github.com/WiringPi/WiringPi) to handle communication over the Pi's serial port.
 
+## Installation
+Once the above version of WiringPi has been installed on your Raspberry Pi, clone this repo and run:
+```
+> make
+> sudo make install
+```
+You can test your installation by running the examples found in /examples.
 ## Notice
 As of January 2023, this is still a WORK IN PROGRESS.
 

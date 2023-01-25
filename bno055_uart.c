@@ -89,7 +89,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     // if we are expecting an acknowledgment
     if (resp == NULL || (ack && resp[0] != 0xEE && resp[1] != 0x01))
     {
-        fprintf(stderr, "Error writing to device: response status = %x\n", resp[1]);
+        fprintf(stderr, "Error writing to device: response status = 0x%x\n", resp[1]);
         return -1;
     }
 
@@ -139,7 +139,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     // Process the response we received
     if (resp[0] != 0xBB)
     {
-        fprintf(stderr, "Failed to read register: response status =  %x\n", resp[1]);
+        fprintf(stderr, "Failed to read register: response status =  0x%x\n", resp[1]);
         return -1;
     }
 
@@ -148,7 +148,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     int length = (int)resp[1];
     if (length != nBytes)
     {
-        fprintf(stdout, "NOTE: Desired length and length of response do not match?\n");
+        fprintf(stdout, "NOTE: Desired length and length of response do not match?\nlength = %d\tnBytes = %d\n", length, nBytes);
     }
 
     // Copy response bytes into bytes value
@@ -220,13 +220,15 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
+        fprintf(stderr, "Error changing op mode to config mode\n");
+        close(serial_fp);
         return -1;
     }
 
     if (write_byte(BNO055_PAGE_ID_ADDR, (uint8_t)0x00, true) == -1)
     {
         fprintf(stderr, "Error initializing BNO055\n");
+        close(serial_fp);
         return -1;
     }
 
@@ -239,7 +241,8 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         bnoId = read_byte(BNO055_CHIP_ID_ADDR);
         if (bnoId != BNO055_ID)
         {
-            fprintf(stderr, "Error initializing BNO055\n");
+            fprintf(stderr, "Error: BNO055 Device ID does not match\n");
+            close(serial_fp);
             return -1;
         }
     }
@@ -247,7 +250,8 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     // Issue a software reset command
     if (write_byte(BNO055_SYS_TRIGGER_ADDR, (uint8_t)0x20, false) == -1)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
+        fprintf(stderr, "Error triggering software reset\n");
+        close(serial_fp);
         return -1;
     }
 
@@ -259,19 +263,22 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 
     if (write_byte(BNO055_PWR_MODE_ADDR, (uint8_t)POWER_MODE_NORMAL, true) == -1)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
+        fprintf(stderr, "Error entering normal power mode\n");
+        close(serial_fp);
         return -1;
     }
 
     if (write_byte(BNO055_SYS_TRIGGER_ADDR, (uint8_t)0x00, true) == -1)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
+        fprintf(stderr, "Error defaulting internal oscillator\n");
+        close(serial_fp);
         return -1;
     }
 
     if (bno_set_mode(mode) == -1)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
+        fprintf(stderr, "Error returning to operation mode\n");
+        close(serial_fp);
         return -1;
     }
 
