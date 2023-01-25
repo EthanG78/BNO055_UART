@@ -1,6 +1,6 @@
 CC = gcc
 
-BASEFLAGS = -Wall -std=c99
+BASEFLAGS = -Wall
 DEBUG_FLAGS = -g
 LIBS = -lc -lwiringPi
 
