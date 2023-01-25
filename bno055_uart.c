@@ -230,8 +230,14 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
     if (bnoId == NULL || bnoId != BNO055_ID)
     {
-        fprintf(stderr, "Error initializing BNO055\n");
-        return -1;
+        // Wait and try again
+        sleep(1);
+        bnoId = read_byte(BNO055_CHIP_ID_ADDR);
+        if (bnoId == NULL || bnoId != BNO055_ID)
+        {
+            fprintf(stderr, "Error initializing BNO055\n");
+            return -1;
+        }
     }
 
     // Issue a software reset command
