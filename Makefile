@@ -2,15 +2,16 @@ CC = gcc
 
 BASEFLAGS = -Wall -std=c99
 DEBUG_FLAGS = -g
+LIBS = -lwiringPi
 
 OBJS = bno055_uart.o
 
 EXE = bno055_uart
 
-release: CFLAGS = $(BASEFLAGS)
+release: CFLAGS = $(BASEFLAGS) $(LIBS)
 release: $(EXE)
 
-debug: CFLAGS = $(BASEFLAGS) $(DEBUG_FLAGS)
+debug: CFLAGS = $(BASEFLAGS) $(DEBUG_FLAGS) $(LIBS)
 debug: $(EXE)
 
 $(EXE): $(OBJS)
