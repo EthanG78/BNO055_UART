@@ -4,26 +4,26 @@ BASEFLAGS = -Wall -std=c99
 DEBUG_FLAGS = -g
 LIBS = -lwiringPi
 
-OBJS = bno055_uart.o
+BINS = libbno055_uart.so
 
-EXE = bno055_uart
+ifeq ($(PREFIX),)
+    PREFIX := /usr/local
+endif
 
 release: CFLAGS = $(BASEFLAGS) $(LIBS)
-release: $(EXE)
+release: $(BINS)
 
 debug: CFLAGS = $(BASEFLAGS) $(DEBUG_FLAGS) $(LIBS)
-debug: $(EXE)
+debug: $(BINS)
 
-$(EXE): $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) -o $(EXE)
-
-bno055_uart.o: bno055_uart.c bno055_uart.h
-	$(CC) $(CFLAGS) -c bno055_uart.c
+libbno055_uart.so: bno055_uart.c bno055_uart.h
+	$(CC) $(CFLAGS) -fPIC -shared -o $@ bno055_uart.c -lc
 
 clean:
 	rm -f $(OBJS)
 	rm -f *~
-	rm -f $(EXE)
+	rm -f $(BINS)
 
-run:
-	./$(EXE)
+install: libbno055_uart.so
+    install -m 644 libbno055_uart.so $(PREFIX)/lib/
+	install -m 644 bno055_uart.h $(PREFIX)/include/
