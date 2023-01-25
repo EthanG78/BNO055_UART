@@ -2,7 +2,7 @@ CC = gcc
 
 BASEFLAGS = -Wall -std=c99
 DEBUG_FLAGS = -g
-LIBS = -lwiringPi
+LIBS = -lc -lwiringPi
 
 BINS = libbno055_uart.so
 
@@ -10,18 +10,16 @@ ifeq ($(PREFIX),)
     PREFIX := /usr/local
 endif
 
-release: CFLAGS = $(BASEFLAGS) $(LIBS)
+release: CFLAGS = $(BASEFLAGS)
 release: $(BINS)
 
-debug: CFLAGS = $(BASEFLAGS) $(DEBUG_FLAGS) $(LIBS)
+debug: CFLAGS = $(BASEFLAGS) $(DEBUG_FLAGS)
 debug: $(BINS)
 
 libbno055_uart.so: bno055_uart.c bno055_uart.h
-	$(CC) $(CFLAGS) -fPIC -shared -o $@ bno055_uart.c -lc
+	$(CC) $(CFLAGS) -fPIC -shared -o $@ bno055_uart.c $(LIBS)
 
 clean:
-	rm -f $(OBJS)
-	rm -f *~
 	rm -f $(BINS)
 
 install: libbno055_uart.so
