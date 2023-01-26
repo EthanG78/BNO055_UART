@@ -144,10 +144,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 
     // Read the data we want
     int length = (int)resp[1];
-    if (length == 0)
-    {
-        fprintf(stdout, "Length is zero? %d", length);
-    }
+    fprintf(stdout, "data length =  %d", length);
 
     //uint8_t data[length];
     if (read(serial_fp, bytes, length) == -1)
@@ -155,17 +152,6 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
         perror("read_bytes() unable to read bytes:");
         return -1;
     }
-
-    // TODO: I am not sure if these should be the same.
-    // SURELY they should be right???
-    /*int length = (int)resp[1];
-    if (length != nBytes)
-    {
-        fprintf(stdout, "NOTE: Desired length and length of response do not match?\nlength = %d\tnBytes = %d\n", length, nBytes);
-    }
-
-    // Copy response bytes into bytes value
-    memcpy(bytes, &resp[2], nBytes);*/
 
     return 1;
 }
@@ -254,7 +240,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         bnoId = read_byte(BNO055_CHIP_ID_ADDR);
         if (bnoId != BNO055_ID)
         {
-            fprintf(stderr, "Error: BNO055 Device ID does not match\n");
+            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%x, Actual: 0x%x\n", BNO055_ID, bnoId);
             close(serial_fp);
             return -1;
         }
