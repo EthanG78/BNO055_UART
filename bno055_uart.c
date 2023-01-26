@@ -11,7 +11,7 @@
 // ack is true. Store the response in byte array resp of size nRespBytes.
 //
 // Return 1 on success, -1 on error.
-int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, int nRespBytes, bool ack)
+int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 {
     int nAttempts = 0;
     while (1)
@@ -32,7 +32,7 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, int nRespBytes, 
 
         // TODO: WE NEED TO HAVE THIS WAIT FOR DATA
         // Otherwise, look for an acknowledgment
-        if (read(serial_fp, resp, nRespBytes) == -1)
+        if (read(serial_fp, resp, 2) == -1)
         {
             perror("send_serial_cmd() timeout waiting for ack:");
             return -1;
@@ -79,7 +79,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     // Send write command over serial, only allow for
     // 5 attempts (ignoring bus errors)
     uint8_t resp[2];
-    if (send_serial_cmd(cmd, cmdSize, resp, 2, ack) == -1)
+    if (send_serial_cmd(cmd, cmdSize, resp, ack) == -1)
     {
         fprintf(stderr, "Error sending serial command\n");
         return -1;
@@ -128,9 +128,8 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
-    int respSize = 2 + nBytes;
-    uint8_t resp[respSize];
-    if (send_serial_cmd(cmd, 4, resp, respSize, true) == -1)
+    uint8_t resp[2];
+    if (send_serial_cmd(cmd, 4, resp, true) == -1)
     {
         fprintf(stderr, "Error sending serial command\n");
         return -1;
@@ -143,16 +142,30 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
         return -1;
     }
 
+    // Read the data we want
+    int length = (int)resp[1];
+    if (length == 0)
+    {
+        fprintf(stdout, "Length is zero? %d", length);
+    }
+
+    //uint8_t data[length];
+    if (read(serial_fp, bytes, length) == -1)
+    {
+        perror("read_bytes() unable to read bytes:");
+        return -1;
+    }
+
     // TODO: I am not sure if these should be the same.
     // SURELY they should be right???
-    int length = (int)resp[1];
+    /*int length = (int)resp[1];
     if (length != nBytes)
     {
         fprintf(stdout, "NOTE: Desired length and length of response do not match?\nlength = %d\tnBytes = %d\n", length, nBytes);
     }
 
     // Copy response bytes into bytes value
-    memcpy(bytes, &resp[2], nBytes);
+    memcpy(bytes, &resp[2], nBytes);*/
 
     return 1;
 }
