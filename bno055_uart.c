@@ -165,12 +165,13 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
         return -1;
     }
 
+    // TODO: What if we just don't check this?
     // Check to make sure we get the right number of bytes returned
-    if (resp[1] != nBytes)
+    /*if (resp[1] != nBytes)
     {
         fprintf(stderr, "Returned data length different from expected:\n\tExpected: %d, Returned: %d\n", (int)nBytes, (int)resp[1]);
         return -1;
-    }
+    }*/
 
     // Read the bytes we requested
     if (read(serial_fp, bytes, (int)nBytes) == -1)
