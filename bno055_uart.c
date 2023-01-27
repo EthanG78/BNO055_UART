@@ -8,13 +8,12 @@
 // TODO: Look into moving the i/o helpers to other file
 
 // Send the command cmd of size nCmdBytes to the BNO055 and wait for a response if
-// ack is true. Store the response in byte array resp of size nRespBytes.
+// ack is true. Store the response in byte array resp of size nRespBytes. If the BNO055
+// indicates a bus error, resend the command MAX_CMD_SEND_ATTEMPTS times.
 //
 // Return 1 on success, -1 on error.
 int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 {
-    fprintf(stdout, "First 4 bytes of cmd: 0x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3]);
-
     int nAttempts = 0;
     while (1)
     {
@@ -51,7 +50,7 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 
         // If there was a bus error, retry
         nAttempts += 1;
-        if (nAttempts > 5)
+        if (nAttempts > MAX_CMD_SEND_ATTEMPTS)
         {
             fprintf(stderr, "Exceeded maximum attempts for acknowledgment\n");
             return -1;
@@ -82,6 +81,8 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack
     {
         cmd[4 + i] = bytes[i] & 0xFF;
     }
+
+    fprintf(stdout, "First 5 bytes of cmd: 0x%02x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4]);
 
     // Send write command over serial, only allow for
     // 5 attempts (ignoring bus errors)
@@ -131,6 +132,8 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
                      0x01,
                      addr & 0xFF,
                      nBytes & 0xFF};
+
+    fprintf(stdout, "First 4 bytes of cmd: 0x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3]);
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
