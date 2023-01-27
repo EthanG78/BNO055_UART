@@ -153,7 +153,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
     if (resp[1] != nBytes)
     {
         fprintf(stderr, "Returned data length different from expected\nExpected: %d, Returned: %d", (int)nBytes, (int)resp[1]);
-        return -1
+        return -1;
     }
 
     // Read the bytes we requested
