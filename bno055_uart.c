@@ -61,7 +61,7 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 // is true, then expect an acknowledgment from the device.
 //
 // Return 1 on success, -1 on error.
-int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
+int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack)
 {
     // Build the write command with the following format:
     // Byte 1: Start Byte 0xAA
@@ -75,7 +75,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     cmd[0] = 0xAA;
     cmd[1] = 0x00;
     cmd[2] = addr & 0xFF;
-    cmd[3] = ((uint8_t)nBytes) & 0xFF;
+    cmd[3] = nBytes & 0xFF;
     for (int i = 0; i < nBytes; i++)
     {
         cmd[4 + i] = bytes[i] & 0xFF;
@@ -118,18 +118,17 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 // in byte array bytes.
 //
 // Return 1 on success, -1 on error.
-int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
+int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
 {
     // Build the read command with the following format:
     // Byte 1: Start Byte 0xAA
     // Byte 2: Read Command 0x01
     // Byte 3: Register Address
     // Byte 4: Number of bytes to be read
-    uint8_t cmd[4];
-    cmd[0] = 0xAA;
-    cmd[1] = 0x01;
-    cmd[2] = addr & 0xFF;
-    cmd[3] = ((uint8_t)nBytes) & 0xFF;
+    uint8_t cmd[] = {0xAA,
+                     0x01,
+                     addr & 0xFF,
+                     nBytes & 0xFF};
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
@@ -147,14 +146,18 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
         return -1;
     }
 
+    // Debug
     fprintf(stderr, "Response in read bytes: 0x%x%x\n", resp[0], resp[1]);
 
-    // Read the data we want
-    int length = (int)resp[1];
-    fprintf(stdout, "data length =  %d\n", length);
+    // Check to make sure we get the right number of bytes returned
+    if (resp[1] != nBytes)
+    {
+        fprintf(stderr, "Returned data length different from expected\nExpected: %d, Returned: %d", (int)nBytes, (int)resp[1]);
+        return -1
+    }
 
-    // uint8_t data[length];
-    if (read(serial_fp, bytes, length) == -1)
+    // Read the bytes we requested
+    if (read(serial_fp, bytes, (int)nBytes) == -1)
     {
         perror("read_bytes() unable to read bytes:");
         return -1;
