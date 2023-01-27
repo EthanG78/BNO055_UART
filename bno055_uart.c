@@ -111,7 +111,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack
 
     // Check to make sure we received a valid response
     // if we are expecting an acknowledgment
-    if (resp == NULL || (ack && resp[0] != 0xEE && resp[1] != 0x01))
+    if (resp == NULL || (ack && (resp[0] != 0xEE || resp[1] != 0x01)))
     {
         fprintf(stderr, "Failed to write to register: 0x%02x%02x\n", resp[0], resp[1]);
         return -1;
@@ -159,19 +159,11 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
     }
 
     // Process the response we received
-    if (resp[0] != 0xBB)
+    if (resp[0] != 0xBB || resp[1] != nBytes)
     {
         fprintf(stderr, "Failed to read register: 0x%02x%02x\n", resp[0], resp[1]);
         return -1;
     }
-
-    // TODO: What if we just don't check this?
-    // Check to make sure we get the right number of bytes returned
-    /*if (resp[1] != nBytes)
-    {
-        fprintf(stderr, "Returned data length different from expected:\n\tExpected: %d, Returned: %d\n", (int)nBytes, (int)resp[1]);
-        return -1;
-    }*/
 
     // Read the bytes we requested
     if (read(serial_fp, bytes, (int)nBytes) == -1)
@@ -250,7 +242,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     // commands (this seems to be necessary after a hard power down).
     write_byte(BNO055_PAGE_ID_ADDR, (uint8_t)0x00, false);
 
-    // Check the device ID
+        // Check the device ID
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
     if (bnoId != BNO055_ID)
     {
