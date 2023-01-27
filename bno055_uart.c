@@ -30,6 +30,11 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
         if (!ack)
             return 1;
 
+        // Wait until serial data is available
+        while (!serialDataAvail(serial_fp))
+        {
+        }
+
         // TODO: WE NEED TO HAVE THIS WAIT FOR DATA
         // Otherwise, look for an acknowledgment
         if (read(serial_fp, resp, 2) == -1)
@@ -89,7 +94,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     // if we are expecting an acknowledgment
     if (resp == NULL || (ack && resp[0] != 0xEE && resp[1] != 0x01))
     {
-        fprintf(stderr, "Error writing to device: response status = 0x%x\n", resp[1]);
+        fprintf(stderr, "Failed to write to register: 0x%x%x\n", resp[0], resp[1]);
         return -1;
     }
 
@@ -138,15 +143,15 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     // Process the response we received
     if (resp[0] != 0xBB)
     {
-        fprintf(stderr, "Failed to read register: response status =  0x%x\n", resp[1]);
+        fprintf(stderr, "Failed to read register: 0x%x%x\n", resp[0], resp[1]);
         return -1;
     }
 
     // Read the data we want
     int length = (int)resp[1];
-    fprintf(stdout, "data length =  %d", length);
+    fprintf(stdout, "data length =  %d\n", length);
 
-    //uint8_t data[length];
+    // uint8_t data[length];
     if (read(serial_fp, bytes, length) == -1)
     {
         perror("read_bytes() unable to read bytes:");
@@ -209,6 +214,13 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     if (serial_fp == -1)
     {
         perror("serialOpen():");
+        return -1;
+    }
+
+    // Initialize WiringPi
+    if (wiringPiSetup() == -1)
+    {
+        fprintf(stdout, "Unable to start wiringPi: %s\n", strerror(errno));
         return -1;
     }
 
