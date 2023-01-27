@@ -7,6 +7,15 @@
 
 // TODO: Look into moving the i/o helpers to other file
 
+// Sleep millis milliseconds
+void sleepms(uint32_t millis)
+{
+    struct timespec ts;
+    ts.tv_sec = millis / 1000;
+    ts.tv_nsec = (millis % 1000) * 1000000;
+    nanosleep(&ts, NULL);
+}
+
 // Send the command cmd of size nCmdBytes to the BNO055 and wait for a response if
 // ack is true. Store the response in byte array resp of size nRespBytes. If the BNO055
 // indicates a bus error, resend the command MAX_CMD_SEND_ATTEMPTS times.
@@ -17,6 +26,13 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
     int nAttempts = 0;
     while (1)
     {
+        fprintf(stdout, "Serial Send: 0x");
+        for (int i = 0; i < nCmdBytes, i++)
+        {
+            fprintf(stdout, "%02x", cmd[i]);
+        }
+        fprintf(stdout, "\n");
+
         // Flush the serial port
         serialFlush(serial_fp);
 
@@ -43,6 +59,8 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
             perror("send_serial_cmd() timeout waiting for ack:");
             return -1;
         }
+
+        fprintf(stdout, "Serial Receive: 0x%02x%02x\n", resp[0], resp[1]);
 
         // If there is no bus error, return
         if (!(resp[0] == 0xEE && resp[1] == 0x07))
@@ -81,8 +99,6 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack
     {
         cmd[4 + i] = bytes[i] & 0xFF;
     }
-
-    fprintf(stdout, "First 5 bytes of cmd: 0x%02x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3], cmd[4]);
 
     // Send write command over serial, only allow for
     // 5 attempts (ignoring bus errors)
@@ -133,8 +149,6 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
                      addr & 0xFF,
                      nBytes & 0xFF};
 
-    fprintf(stdout, "First 4 bytes of cmd: 0x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3]);
-
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
     uint8_t resp[2];
@@ -150,9 +164,6 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
         fprintf(stderr, "Failed to read register: 0x%02x%02x\n", resp[0], resp[1]);
         return -1;
     }
-
-    // Debug
-    fprintf(stderr, "Response in read bytes: 0x%02x%02x\n", resp[0], resp[1]);
 
     // Check to make sure we get the right number of bytes returned
     if (resp[1] != nBytes)
@@ -200,10 +211,7 @@ int bno_set_mode(bno055_opmode_t mode)
     int success = write_byte(BNO055_OPR_MODE_ADDR, mode & 0xFF, true);
 
     // Sleep 30 miliseconds
-    struct timespec ts;
-    ts.tv_sec = 30 / 1000;
-    ts.tv_nsec = (30 % 1000) * 1000000;
-    nanosleep(&ts, NULL);
+    sleepms(30);
 
     if (success == -1)
     {
@@ -241,6 +249,21 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     // commands (this seems to be necessary after a hard power down).
     write_byte(BNO055_PAGE_ID_ADDR, (uint8_t)0x00, false);
 
+    // Check the device ID
+    uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
+    if (bnoId != BNO055_ID)
+    {
+        // Wait and try again
+        sleepms(1000);
+        bnoId = read_byte(BNO055_CHIP_ID_ADDR);
+        if (bnoId != BNO055_ID)
+        {
+            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%02x, Actual: 0x%02x\n", BNO055_ID, bnoId);
+            close(serial_fp);
+            return -1;
+        }
+    }
+
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
     {
         fprintf(stderr, "Error changing op mode to config mode\n");
@@ -255,21 +278,6 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
-    // Check the device ID
-    uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
-    if (bnoId != BNO055_ID)
-    {
-        // Wait and try again
-        sleep(1);
-        bnoId = read_byte(BNO055_CHIP_ID_ADDR);
-        if (bnoId != BNO055_ID)
-        {
-            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%02x, Actual: 0x%02x\n", BNO055_ID, bnoId);
-            close(serial_fp);
-            return -1;
-        }
-    }
-
     // Issue a software reset command
     if (write_byte(BNO055_SYS_TRIGGER_ADDR, (uint8_t)0x20, false) == -1)
     {
@@ -279,10 +287,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     }
 
     // Wait 650ms after reset
-    struct timespec ts;
-    ts.tv_sec = 650 / 1000;
-    ts.tv_nsec = (650 % 1000) * 1000000;
-    nanosleep(&ts, NULL);
+    sleepms(650);
 
     if (write_byte(BNO055_PWR_MODE_ADDR, (uint8_t)POWER_MODE_NORMAL, true) == -1)
     {
