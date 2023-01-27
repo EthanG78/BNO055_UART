@@ -118,7 +118,7 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 // in byte array bytes.
 //
 // Return 1 on success, -1 on error.
-int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
+int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
 {
     // Build the read command with the following format:
     // Byte 1: Start Byte 0xAA
@@ -174,6 +174,8 @@ uint8_t read_byte(bno055_register_t addr)
     {
         fprintf(stderr, "Error reading single byte\n");
     }
+
+    fprintf(stdout, "Byte read: 0x%x\n", readByte[0]);
 
     // Ew no error checking
     return readByte[0];
