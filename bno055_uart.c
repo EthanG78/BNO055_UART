@@ -75,7 +75,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes, bool ack)
     cmd[0] = 0xAA;
     cmd[1] = 0x00;
     cmd[2] = addr & 0xFF;
-    cmd[3] = nBytes & 0xFF;
+    cmd[3] = ((uint8_t)nBytes) & 0xFF;
     for (int i = 0; i < nBytes; i++)
     {
         cmd[4 + i] = bytes[i] & 0xFF;
@@ -118,7 +118,7 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 // in byte array bytes.
 //
 // Return 1 on success, -1 on error.
-int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
+int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
 {
     // Build the read command with the following format:
     // Byte 1: Start Byte 0xAA
@@ -129,7 +129,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
     cmd[0] = 0xAA;
     cmd[1] = 0x01;
     cmd[2] = addr & 0xFF;
-    cmd[3] = nBytes & 0xFF;
+    cmd[3] = ((uint8_t)nBytes) & 0xFF;
 
     // Send read command over serial, only allow for
     // 5 attempts (ignoring bus errors)
