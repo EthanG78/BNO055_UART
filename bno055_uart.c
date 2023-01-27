@@ -27,7 +27,7 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
     while (1)
     {
         fprintf(stdout, "Serial Send: 0x");
-        for (int i = 0; i < nCmdBytes, i++)
+        for (int i = 0; i < nCmdBytes; i++)
         {
             fprintf(stdout, "%02x", cmd[i]);
         }
