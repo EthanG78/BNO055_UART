@@ -13,6 +13,8 @@
 // Return 1 on success, -1 on error.
 int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 {
+    fprintf(stdout, "First 4 bytes of cmd: 0x%02x%02x%02x%02x\n", cmd[0], cmd[1], cmd[2], cmd[3]);
+
     int nAttempts = 0;
     while (1)
     {
@@ -94,7 +96,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack
     // if we are expecting an acknowledgment
     if (resp == NULL || (ack && resp[0] != 0xEE && resp[1] != 0x01))
     {
-        fprintf(stderr, "Failed to write to register: 0x%x%x\n", resp[0], resp[1]);
+        fprintf(stderr, "Failed to write to register: 0x%02x%02x\n", resp[0], resp[1]);
         return -1;
     }
 
@@ -108,7 +110,7 @@ int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack
 int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 {
     uint8_t bytes[] = {byte & 0xFF};
-    if (write_bytes(addr, bytes, 1, ack) == -1)
+    if (write_bytes(addr, bytes, 0x01, ack) == -1)
         return -1;
 
     return 1;
@@ -142,17 +144,17 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
     // Process the response we received
     if (resp[0] != 0xBB)
     {
-        fprintf(stderr, "Failed to read register: 0x%x%x\n", resp[0], resp[1]);
+        fprintf(stderr, "Failed to read register: 0x%02x%02x\n", resp[0], resp[1]);
         return -1;
     }
 
     // Debug
-    fprintf(stderr, "Response in read bytes: 0x%x%x\n", resp[0], resp[1]);
+    fprintf(stderr, "Response in read bytes: 0x%02x%02x\n", resp[0], resp[1]);
 
     // Check to make sure we get the right number of bytes returned
     if (resp[1] != nBytes)
     {
-        fprintf(stderr, "Returned data length different from expected\nExpected: %d, Returned: %d", (int)nBytes, (int)resp[1]);
+        fprintf(stderr, "Returned data length different from expected:\n\tExpected: %d, Returned: %d\n", (int)nBytes, (int)resp[1]);
         return -1;
     }
 
@@ -173,12 +175,12 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
 uint8_t read_byte(bno055_register_t addr)
 {
     uint8_t readByte[1];
-    if (read_bytes(addr, readByte, 1) == -1)
+    if (read_bytes(addr, readByte, 0x01) == -1)
     {
         fprintf(stderr, "Error reading single byte\n");
     }
 
-    fprintf(stdout, "Byte read: 0x%x\n", readByte[0]);
+    fprintf(stdout, "Byte read: 0x%02x\n", readByte[0]);
 
     // Ew no error checking
     return readByte[0];
@@ -259,7 +261,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         bnoId = read_byte(BNO055_CHIP_ID_ADDR);
         if (bnoId != BNO055_ID)
         {
-            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%x, Actual: 0x%x\n", BNO055_ID, bnoId);
+            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%02x, Actual: 0x%02x\n", BNO055_ID, bnoId);
             close(serial_fp);
             return -1;
         }
