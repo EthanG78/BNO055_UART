@@ -147,6 +147,8 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, int nBytes)
         return -1;
     }
 
+    fprintf(stderr, "Response in read bytes: 0x%x%x\n", resp[0], resp[1]);
+
     // Read the data we want
     int length = (int)resp[1];
     fprintf(stdout, "data length =  %d\n", length);
@@ -185,7 +187,7 @@ uint8_t read_byte(bno055_register_t addr)
 // Return 1 on success, -1 on error.
 int bno_set_mode(bno055_opmode_t mode)
 {
-    int success = write_byte(BNO055_OPR_MODE_ADDR, mode, true);
+    int success = write_byte(BNO055_OPR_MODE_ADDR, mode & 0xFF, true);
 
     // Sleep 30 miliseconds
     struct timespec ts;
