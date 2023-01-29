@@ -4,7 +4,7 @@ BASEFLAGS = -Wall
 DEBUG_FLAGS = -g
 LIBS = -lwiringPi -lbno055_uart
 
-$(EXE) bno055_uart_test bno055_uart_system_test
+$(EXE) =  bno055_uart_test bno055_uart_system_test
 
 release: CFLAGS = $(BASEFLAGS)
 release: $(EXE)
