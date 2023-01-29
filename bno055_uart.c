@@ -317,7 +317,7 @@ int get_system_status(uint8_t *status, bool run_self_test)
 
         // Perform self test
         uint8_t trigger = read_byte(BNO055_SYS_TRIGGER_ADDR);
-        if (write_byte(BNO055_SYS_TRIGGER_ADDR, trigger | 0x10) == -1)
+        if (write_byte(BNO055_SYS_TRIGGER_ADDR, trigger | 0x10, true) == -1)
         {
             fprintf(stderr, "Failed to perform self test\n");
             close(serial_fp);
@@ -440,4 +440,5 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 int bno_close()
 {
     close(serial_fp);
+    return 1;
 }
