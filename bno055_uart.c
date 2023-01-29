@@ -239,6 +239,108 @@ int bno_set_mode(bno055_opmode_t mode)
     return 1;
 }
 
+// Get the revision information of the BNO055 chip. These values
+// are returned as a 6 btye array with the following format:
+//      rev[0] = Software revision least significant byte
+//      rev[1] = Software revision most significant byte
+//      rev[2] = Bootloader version
+//      rev[3] = Accelerometer ID
+//      rev[4] = Magnetometer ID
+//      rev[5] = Gyro ID
+//
+// Return 1 on success, -1 on error.
+int bno_get_revision(uint8_t *rev)
+{
+    rev[0] = read_byte(BNO055_SW_REV_ID_LSB_ADDR);
+    rev[1] = read_byte(BNO055_SW_REV_ID_MSB_ADDR);
+    rev[2] = read_byte(BNO055_BL_REV_ID_ADDR);
+    rev[3] = read_byte(BNO055_ACCEL_REV_ID_ADDR);
+    rev[4] = read_byte(BNO055_MAG_REV_ID_ADDR);
+    rev[5] = read_byte(BNO055_GYRO_REV_ID_ADDR);
+
+    return 1;
+}
+
+// Check the status registers of the BNO055 chip. Return these values
+// in a 3 byte array with the following format:
+//      status[0] = System status register with following values
+//          0x00 - Idle
+//          0x01 - System Error
+//          0x02 - Initializing Peripherals
+//          0x03 - System Initialization
+//          0x04 - Executing Self-Test
+//          0x05 - Sensor fusion algorithm running
+//          0x06 - System running without fusion algorithms
+//      status[1] = System error register with following values
+//          0x00 - No error
+//          0x01 - Peripheral initialization error
+//          0x02 - System initialization error
+//          0x03 - Self test result failed
+//          0x04 - Register map value out of range
+//          0x05 - Register map address out of range
+//          0x06 - Register map write error
+//          0x07 - BNO low power mode not available for selected operation mode
+//          0x08 - Accelerometer power mode not available
+//          0x09 - Fusion algorithm configuration error
+//          0x0A - Sensor configuration error
+//      status[2] = Self test result register with following meaning
+//          Bit value: 1 = test passed, 0 = test failed
+//          Bit 0 = Accelerometer self test
+//          Bit 1 = Magnetometer self test
+//          Bit 2 = Gyroscope self test
+//          Bit 3 = MCU self test
+//          Value of 0x0F = all passed
+//
+// If run_self_test is passed in as false then no self test is performed and
+// 0xF0 will be returned for the self test result.  Note that running a
+// self test requires going into config mode which will stop the fusion
+// engine from running.
+//
+// Return 1 on success, -1 on error.
+int get_system_status(uint8_t *status, bool run_self_test)
+{
+    // Read status and error registers
+    status[0] = read_byte(BNO055_SYS_STAT_ADDR);
+    status[1] = read_byte(BNO055_SYS_ERR_ADDR);
+
+    // Self test result
+    status[2] = 0xF0;
+    if (run_self_test)
+    {
+        // Enter configuration mode
+        if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
+        {
+            fprintf(stderr, "Error changing op mode to config mode\n");
+            close(serial_fp);
+            return -1;
+        }
+
+        // Perform self test
+        uint8_t trigger = read_byte(BNO055_SYS_TRIGGER_ADDR);
+        if (write_byte(BNO055_SYS_TRIGGER_ADDR, trigger | 0x10) == -1)
+        {
+            fprintf(stderr, "Failed to perform self test\n");
+            close(serial_fp);
+            return -1;
+        }
+
+        delay(1000);
+
+        // Read the test results
+        status[2] = read_byte(BNO055_SELFTEST_RESULT_ADDR);
+
+        // Return to normal operation mode
+        if (bno_set_mode(op_mode) == -1)
+        {
+            fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
+            close(serial_fp);
+            return -1;
+        }
+    }
+
+    return 1;
+}
+
 // Initialize communication with a BNO055 IMU over serial
 // port specified by serialPort. This MUST BE CALLED BEFORE
 // ANY OTHER FUNCTION IN THIS LIBRARY.
@@ -274,6 +376,9 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         close(serial_fp);
         return -1;
     }
+
+    // Store what mode the user wants to operate in
+    op_mode = mode;
 
     // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
@@ -318,7 +423,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     }
 
     // Return to normal operating mode as specified by mode argument
-    if (bno_set_mode(mode) == -1)
+    if (bno_set_mode(op_mode) == -1)
     {
         fprintf(stderr, "Error returning to operation mode\n");
         close(serial_fp);
