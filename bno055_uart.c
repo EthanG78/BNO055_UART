@@ -130,7 +130,14 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 {
     uint8_t bytes[] = {byte & 0xFF};
     if (write_bytes(addr, bytes, 0x01, ack) == -1)
-        return -1;
+    {
+        // wait and try again
+        delay(1000);
+        if (write_bytes(addr, bytes, 0x01, ack) == -1)
+        {
+            return -1;
+        }
+    }
 
     return 1;
 }
@@ -197,7 +204,12 @@ uint8_t read_byte(bno055_register_t addr)
     uint8_t readByte[1];
     if (read_bytes(addr, readByte, 0x01) == -1)
     {
-        fprintf(stderr, "Error reading single byte\n");
+        // Wait and try again
+        delay(1000);
+        if (read_bytes(addr, readByte, 0x01) == -1)
+        {
+            fprintf(stderr, "Error reading single byte\n");
+        }
     }
 
     fprintf(stdout, "Byte read: 0x%02x\n", readByte[0]);
@@ -258,17 +270,12 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
     if (bnoId != BNO055_ID)
     {
-        // Wait and try again
-        delay(1000);
-        bnoId = read_byte(BNO055_CHIP_ID_ADDR);
-        if (bnoId != BNO055_ID)
-        {
-            fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%02x, Actual: 0x%02x\n", BNO055_ID, bnoId);
-            close(serial_fp);
-            return -1;
-        }
+        fprintf(stderr, "Error: BNO055 Device ID does not match\nExpected: 0x%02x, Actual: 0x%02x\n", BNO055_ID, bnoId);
+        close(serial_fp);
+        return -1;
     }
 
+    // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
     {
         fprintf(stderr, "Error changing op mode to config mode\n");
@@ -276,6 +283,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
+    // Make sure we are on address page 0
     if (write_byte(BNO055_PAGE_ID_ADDR, 0x00, true) == -1)
     {
         fprintf(stderr, "Error initializing BNO055\n");
@@ -293,6 +301,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 
     delay(650);
 
+    // Enter normal power mode
     if (write_byte(BNO055_PWR_MODE_ADDR, (uint8_t)POWER_MODE_NORMAL, true) == -1)
     {
         fprintf(stderr, "Error entering normal power mode\n");
@@ -300,6 +309,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
+    // Default to internal oscillator
     if (write_byte(BNO055_SYS_TRIGGER_ADDR, 0x00, true) == -1)
     {
         fprintf(stderr, "Error defaulting internal oscillator\n");
@@ -307,6 +317,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
+    // Return to normal operating mode as specified by mode argument
     if (bno_set_mode(mode) == -1)
     {
         fprintf(stderr, "Error returning to operation mode\n");
