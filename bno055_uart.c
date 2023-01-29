@@ -46,7 +46,7 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
         int respByteIdx = 0;
         while (serialDataAvail(serial_fp) && respByteIdx < 2)
         {
-            if (read(serial_fp, resp[respByteIdx], 1) == -1)
+            if (read(serial_fp, &resp[respByteIdx], 1) == -1)
             {
                 perror("send_serial_cmd() timeout waiting for ack:");
                 return -1;
@@ -171,7 +171,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
     int byteIdx = 0;
     while (serialDataAvail(serial_fp) && byteIdx < nBytes)
     {
-        if (read(serial_fp, bytes[byteIdx], 1) == -1)
+        if (read(serial_fp, &bytes[byteIdx], 1) == -1)
         {
             perror("read_bytes() unable to read bytes:");
             return -1;
@@ -259,7 +259,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     if (bnoId != BNO055_ID)
     {
         // Wait and try again
-        sleepms(1000);
+        delay(1000);
         bnoId = read_byte(BNO055_CHIP_ID_ADDR);
         if (bnoId != BNO055_ID)
         {
