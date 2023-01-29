@@ -252,7 +252,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     // First send a thow-away command and ignore any response
     // just to make sure the BNO is in a good state and ready to accept
     // commands (this seems to be necessary after a hard power down).
-    // write_byte(BNO055_PAGE_ID_ADDR, 0x00, false);
+    write_byte(BNO055_PAGE_ID_ADDR, 0x00, false);
 
     // Check the device ID
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
