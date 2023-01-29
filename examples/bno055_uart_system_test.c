@@ -39,7 +39,7 @@ int main()
     fprintf(stdout, "BNO055 System Status Information:");
     fprintf(stdout, "\n\tSystem status register: 0x%02x", status[0]);
     fprintf(stdout, "\n\tSystem error register: 0x%02x", status[1]);
-    fprintf(stdout, "\n\tSelf test result register: 0x%02x", status[2]);
+    fprintf(stdout, "\n\tSelf test result register: 0x%02x\n\n", status[2]);
 
     if (bno_close() == -1)
     {
