@@ -1,6 +1,6 @@
 /*
- * bno055_uart_test.c
- * Small test for bno055_uart library
+ * bno055_uart_init_test.c
+ * Test initialization code of bno055_uart.
  * Author: Ethan Garnier
  */
 #include <stdio.h>
@@ -14,6 +14,13 @@ int main()
     }
 
     fprintf(stdout, "SUCCESSFULLY INITIALIZED BNO055\n");
+
+    if (bno_close() == -1)
+    {
+        return 1;
+    }
+
+    fprintf(stdout, "SUCCESSFULLY CLOSED BNO055 COMMUNICATIONS\n");
 
     return 0;
 }

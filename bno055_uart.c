@@ -327,3 +327,12 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
 
     return 1;
 }
+
+// Close communication with BNO055. No other library
+// functions may be called after this function finishes.
+//
+// Return 1 on success, -1 on error.
+int bno_close()
+{
+    close(serial_fp);
+}
