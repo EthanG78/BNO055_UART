@@ -4,7 +4,7 @@ BASEFLAGS = -Wall
 DEBUG_FLAGS = -g
 LIBS = -lwiringPi -lbno055_uart
 
-SOURCE = bno055_uart_init_test.c
+SOURCE = bno055_uart_init_test.c bno055_uart_system_test.c 
 
 EXE = bno055_uart_test
 
