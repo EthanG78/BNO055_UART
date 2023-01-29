@@ -7,15 +7,6 @@
 
 // TODO: Look into moving the i/o helpers to other file
 
-// Sleep millis milliseconds
-void sleepms(uint32_t millis)
-{
-    struct timespec ts;
-    ts.tv_sec = millis / 1000;
-    ts.tv_nsec = (millis % 1000) * 1000000;
-    nanosleep(&ts, NULL);
-}
-
 // Send the command cmd of size nCmdBytes to the BNO055 and wait for a response if
 // ack is true. Store the response in byte array resp of size nRespBytes. If the BNO055
 // indicates a bus error, resend the command MAX_CMD_SEND_ATTEMPTS times.
@@ -43,22 +34,33 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
             return -1;
         }
 
+        delay(3);
+
         // If we don't want an ack, then return
         if (!ack)
             return 1;
 
-        // Wait until serial data is available
-        while (!serialDataAvail(serial_fp))
+        // This is independent on read or write command,
+        // we want to read the first two response bytes
+        // and determine if there was a bus error or not.
+        int respByteIdx = 0;
+        while (serialDataAvail(serial_fp) && respByteIdx < 2)
         {
+            if (read(serial_fp, resp[respByteIdx], 1) == -1)
+            {
+                perror("send_serial_cmd() timeout waiting for ack:");
+                return -1;
+            }
+            respByteIdx++;
         }
 
         // TODO: WE NEED TO HAVE THIS WAIT FOR DATA
         // Otherwise, look for an acknowledgment
-        if (read(serial_fp, resp, 2) == -1)
+        /*if (read(serial_fp, resp, 2) == -1)
         {
             perror("send_serial_cmd() timeout waiting for ack:");
             return -1;
-        }
+        }*/
 
         fprintf(stdout, "Serial Receive: 0x%02x%02x\n", resp[0], resp[1]);
 
@@ -165,12 +167,23 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
         return -1;
     }
 
+    // TODO: This is not ideal... we are calling read() for EVERY BTYE.
+    int byteIdx = 0;
+    while (serialDataAvail(serial_fp) && byteIdx < nBytes)
+    {
+        if (read(serial_fp, bytes[byteIdx], 1) == -1)
+        {
+            perror("read_bytes() unable to read bytes:");
+            return -1;
+        }
+    }
+
     // Read the bytes we requested
-    if (read(serial_fp, bytes, (int)nBytes) == -1)
+    /*if (read(serial_fp, bytes, (int)nBytes) == -1)
     {
         perror("read_bytes() unable to read bytes:");
         return -1;
-    }
+    }*/
 
     return 1;
 }
@@ -203,8 +216,7 @@ int bno_set_mode(bno055_opmode_t mode)
 {
     int success = write_byte(BNO055_OPR_MODE_ADDR, mode & 0xFF, true);
 
-    // Sleep 30 miliseconds
-    sleepms(30);
+    delay(30);
 
     if (success == -1)
     {
@@ -240,9 +252,9 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     // First send a thow-away command and ignore any response
     // just to make sure the BNO is in a good state and ready to accept
     // commands (this seems to be necessary after a hard power down).
-    write_byte(BNO055_PAGE_ID_ADDR, (uint8_t)0x00, false);
+    // write_byte(BNO055_PAGE_ID_ADDR, 0x00, false);
 
-        // Check the device ID
+    // Check the device ID
     uint8_t bnoId = read_byte(BNO055_CHIP_ID_ADDR);
     if (bnoId != BNO055_ID)
     {
@@ -264,7 +276,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
-    if (write_byte(BNO055_PAGE_ID_ADDR, (uint8_t)0x00, true) == -1)
+    if (write_byte(BNO055_PAGE_ID_ADDR, 0x00, true) == -1)
     {
         fprintf(stderr, "Error initializing BNO055\n");
         close(serial_fp);
@@ -272,15 +284,14 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
     }
 
     // Issue a software reset command
-    if (write_byte(BNO055_SYS_TRIGGER_ADDR, (uint8_t)0x20, false) == -1)
+    if (write_byte(BNO055_SYS_TRIGGER_ADDR, 0x20, false) == -1)
     {
         fprintf(stderr, "Error triggering software reset\n");
         close(serial_fp);
         return -1;
     }
 
-    // Wait 650ms after reset
-    sleepms(650);
+    delay(650);
 
     if (write_byte(BNO055_PWR_MODE_ADDR, (uint8_t)POWER_MODE_NORMAL, true) == -1)
     {
@@ -289,7 +300,7 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         return -1;
     }
 
-    if (write_byte(BNO055_SYS_TRIGGER_ADDR, (uint8_t)0x00, true) == -1)
+    if (write_byte(BNO055_SYS_TRIGGER_ADDR, 0x00, true) == -1)
     {
         fprintf(stderr, "Error defaulting internal oscillator\n");
         close(serial_fp);
