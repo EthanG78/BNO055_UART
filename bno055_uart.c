@@ -5,6 +5,10 @@
  */
 #include "bno055_uart.h"
 
+int serial_fp = -1;
+
+bno055_opmode_t op_mode = OPERATION_MODE_NDOF;
+
 // TODO: Look into moving the i/o helpers to other file
 
 // Send the command cmd of size nCmdBytes to the BNO055 and wait for a response if

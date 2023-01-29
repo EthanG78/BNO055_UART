@@ -22,8 +22,7 @@ int main()
     }
 
     fprintf(stdout, "BNO055 Revision Information:");
-    uint16_t sw = ((rev[1] << 8) | rev[0]) & 0xFFFF;
-    fprintf(stdout, "\n\tSoftware revision: 0x%02x%02x", sw);
+    fprintf(stdout, "\n\tSoftware revision: 0x%02x%02x", rev[1], rev[0]);
     fprintf(stdout, "\n\tBootloader version: 0x%02x", rev[2]);
     fprintf(stdout, "\n\tAccelerometer ID: 0x%02x", rev[3]);
     fprintf(stdout, "\n\tMagnetometer ID: 0x%02x", rev[4]);
@@ -31,7 +30,7 @@ int main()
 
 
     uint8_t status[3];
-    if (get_system_status(status, 1) == -1)
+    if (bno_get_system_status(status, 1) == -1)
     {
         fprintf(stderr, "Failed to get system status information from bno055\n");
         return 1;

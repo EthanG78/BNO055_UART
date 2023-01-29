@@ -263,10 +263,6 @@ typedef enum
     MAG_RADIUS_MSB_ADDR = 0x6A
 } bno055_register_t;
 
-int serial_fp = -1;
-
-bno055_opmode_t op_mode = OPERATION_MODE_NDOF;
-
 int bno_get_revision(uint8_t *rev);
 
 int bno_get_system_status(uint8_t *status, bool run_self_test);
