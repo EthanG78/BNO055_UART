@@ -351,6 +351,26 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
     return 1;
 }
 
+// Check the calibration status register of each sensor and return
+// their values in a 4 byte array with the following format:
+//      cal[0] = System calibration status (0x03 = calibrated, 0x00 = not calibrated)
+//      cal[1] = Gyroscope calibration status (0x03 = calibrated, 0x00 = not calibrated)
+//      cal[2] = Accelerometer calibration status (0x03 = calibrated, 0x00 = not calibrated)
+//      cal[3] = Magnetometer calibration status (0x03 = calibrated, 0x00 = not calibrated)
+//
+// Return 1 on success, -1 on error.
+int bno_get_calibration_status(uint8_t *cal)
+{
+    uint8_t calStatus = read_byte(BNO055_CALIB_STAT_ADDR);
+    
+    cal[0] = (calStatus >> 6) & 0x03;
+    cal[1] = (calStatus >> 4) & 0x03;
+    cal[2] = (calStatus >> 2) & 0x03;
+    cal[3] = calStatus & 0x03;
+
+    return 1;
+}
+
 // Initialize communication with a BNO055 IMU over serial
 // port specified by serialPort. This MUST BE CALLED BEFORE
 // ANY OTHER FUNCTION IN THIS LIBRARY.
