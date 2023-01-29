@@ -297,7 +297,7 @@ int bno_get_revision(uint8_t *rev)
 // engine from running.
 //
 // Return 1 on success, -1 on error.
-int get_system_status(uint8_t *status, bool run_self_test)
+int bno_get_system_status(uint8_t *status, bool run_self_test)
 {
     // Read status and error registers
     status[0] = read_byte(BNO055_SYS_STAT_ADDR);

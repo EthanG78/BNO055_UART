@@ -269,6 +269,8 @@ bno055_opmode_t op_mode = OPERATION_MODE_NDOF;
 
 int bno_get_revision(uint8_t *rev);
 
+int bno_get_system_status(uint8_t *status, bool run_self_test);
+
 int bno_set_mode(bno055_opmode_t mode);
 
 int bno_init(char *serialPort, bno055_opmode_t mode);
