@@ -1,7 +1,7 @@
 CC = gcc
 
 BASEFLAGS = -Wall
-DEBUG_FLAGS = -g
+DEBUG_FLAGS = -DDEBUG -g
 LIBS = -lc -lwiringPi
 
 BINS = libbno055_uart.so

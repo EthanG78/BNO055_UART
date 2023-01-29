@@ -21,12 +21,14 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
     int nAttempts = 0;
     while (1)
     {
+#ifdef DEBUG
         fprintf(stdout, "Serial Send: 0x");
         for (int i = 0; i < nCmdBytes; i++)
         {
             fprintf(stdout, "%02x", cmd[i]);
         }
         fprintf(stdout, "\n");
+#endif
 
         // Flush the serial port
         serialFlush(serial_fp);
@@ -66,7 +68,9 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
             return -1;
         }*/
 
+#ifdef DEBUG
         fprintf(stdout, "Serial Receive: 0x%02x%02x\n", resp[0], resp[1]);
+#endif
 
         // If there is no bus error, return
         if (!(resp[0] == 0xEE && resp[1] == 0x07))
@@ -216,7 +220,9 @@ uint8_t read_byte(bno055_register_t addr)
         }
     }
 
+#ifdef DEBUG
     fprintf(stdout, "Byte read: 0x%02x\n", readByte[0]);
+#endif
 
     // Ew no error checking
     return readByte[0];
