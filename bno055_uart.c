@@ -423,7 +423,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     fprintf(stdout, "\n%d ", gyro_offset_y);
     fprintf(stdout, "\n%d ", gyro_offset_z);
     fprintf(stdout, "\n%d ", accel_radius);
-    fprintf(stdout, "\n%d ", mag_radius);
+    fprintf(stdout, "\n%d\n", mag_radius);
 
     if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, (uint8_t *)&offsets, sizeof(bno055_offsets_t)) == -1)
     {
@@ -442,7 +442,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     fprintf(stdout, "\n%d ", offsets->gyro_offset_y);
     fprintf(stdout, "\n%d ", offsets->gyro_offset_z);
     fprintf(stdout, "\n%d ", offsets->accel_radius);
-    fprintf(stdout, "\n%d ", offsets->mag_radius);
+    fprintf(stdout, "\n%d\n", offsets->mag_radius);
 
     // Return to normal operation mode
     if (bno_set_mode(op_mode) == -1)
