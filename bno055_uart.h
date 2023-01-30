@@ -32,7 +32,9 @@
 #define MAX_CMD_SEND_ATTEMPTS 10
 
 /* Calibration offsets */
-typedef struct
+#pragma pack(push)
+#pragma pack(1)
+struct bno055_offsets_t_struct
 {
     uint16_t accel_offset_x;
     uint16_t accel_offset_y;
@@ -49,7 +51,9 @@ typedef struct
     uint16_t accel_radius;
 
     uint16_t mag_radius;
-} bno055_offsets_t;
+};
+#pragma pack(pop)
+typedef struct bno055_offsets_t_struct bno055_offsets_t;
 
 /* Operation mode setting */
 typedef enum
