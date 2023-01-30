@@ -14,6 +14,7 @@ int main()
         return 1;
     }
 
+    // Calibrate the sensors first
     uint8_t cal[4];
     if (bno_get_calibration_status(cal) == -1)
     {
@@ -23,6 +24,7 @@ int main()
 
     fprintf(stdout, "\n-----------\n");
     fprintf(stdout, "Calibrating BNO055 Device:\n");
+    fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d", cal[3], cal[2], cal[1], cal[0]);
 
     for (int i = 3; i >= 0; i--)
     {
@@ -50,6 +52,10 @@ int main()
                 fprintf(stderr, "Error fetching calibration status registers\n");
                 return 1;
             }
+
+            fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d", cal[3], cal[2], cal[1], cal[0]);
+
+            delay(1000);
         }
 
         switch (i)
