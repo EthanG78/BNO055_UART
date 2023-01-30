@@ -425,7 +425,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     fprintf(stdout, "\n%d ", accel_radius);
     fprintf(stdout, "\n%d ", mag_radius);
 
-    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, offsets, sizeof(bno055_offsets_t)) == -1)
+    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, (uint8_t *)&offsets, sizeof(bno055_offsets_t)) == -1)
     {
         fprintf(stderr, "Unable to read calibration offset data\n");
         close(serial_fp);
@@ -460,7 +460,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
 // bno_get_calibration_data()
 //
 // Return 1 on success, -1 on error.
-int bno_set_calibration(bno055_offsets_t offsets)
+int bno_set_calibration(bno055_offsets_t *offsets)
 {
     // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
@@ -472,7 +472,7 @@ int bno_set_calibration(bno055_offsets_t offsets)
 
     // Write the stored calibration offsets to their respective
     // registers on the bno055
-    if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, &offsets, sizeof(bno055_offsets_t), true) == -1)
+    if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, (uint8_t *)&offsets, sizeof(bno055_offsets_t), true) == -1)
     {
         fprintf(stderr, "Unable to write calibration offset data\n");
         close(serial_fp);
