@@ -31,6 +31,16 @@
 /* Maximum number of attempts to resend a cmd*/
 #define MAX_CMD_SEND_ATTEMPTS 10
 
+/* A structure to represent revisions */
+typedef struct
+{
+    uint8_t accel_rev;
+    uint8_t mag_rev;
+    uint8_t gyro_rev;
+    uint16_t sw_rev;
+    uint8_t bl_rev;
+} bno055_rev_info_t;
+
 /* Calibration offsets */
 #pragma pack(push)
 #pragma pack(1)
@@ -106,16 +116,6 @@ typedef enum
     REMAP_SIGN_P6 = 0x07,
     REMAP_SIGN_P7 = 0x05
 } bno055_axis_remap_sign_t;
-
-/* A structure to represent revisions */
-typedef struct
-{
-    uint8_t accel_rev;
-    uint8_t mag_rev;
-    uint8_t gyro_rev;
-    uint16_t sw_rev;
-    uint8_t bl_rev;
-} bno055_rev_info_t;
 
 /* BNO055 Registers */
 typedef enum

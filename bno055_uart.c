@@ -390,25 +390,59 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     // Read the calibration data into a 22 byte array since the offset
     // data is stored at 22 contiguous bytes in memory
     uint8_t calData[22];
-    if (read_bytes(serial_fp, calData, 22) == -1)
+    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, calData, 22) == -1)
     {
         fprintf(stderr, "Unable to read calibration offset data\n");
         close(serial_fp);
         return -1;
     }
 
+    // TESTING
+
     // Must properly transfer data into bno055_offsets_t struct passed
-    offsets->accel_offset_x = (((uint16_t)calData[1] << 8) | calData[0]) & 0xFFFF;
-    offsets->accel_offset_y = (((uint16_t)calData[3] << 8) | calData[2]) & 0xFFFF;
-    offsets->accel_offset_z = (((uint16_t)calData[5] << 8) | calData[4]) & 0xFFFF;
-    offsets->mag_offset_x = (((uint16_t)calData[7] << 8) | calData[6]) & 0xFFFF;
-    offsets->mag_offset_y = (((uint16_t)calData[9] << 8) | calData[8]) & 0xFFFF;
-    offsets->mag_offset_z = (((uint16_t)calData[11] << 8) | calData[10]) & 0xFFFF;
-    offsets->gyro_offset_x = (((uint16_t)calData[13] << 8) | calData[12]) & 0xFFFF;
-    offsets->gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
-    offsets->gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
-    offsets->accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
-    offsets->accel_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
+    uint8_t accel_offset_x = (((uint16_t)calData[1] << 8) | calData[0]) & 0xFFFF;
+    uint8_t accel_offset_y = (((uint16_t)calData[3] << 8) | calData[2]) & 0xFFFF;
+    uint8_t accel_offset_z = (((uint16_t)calData[5] << 8) | calData[4]) & 0xFFFF;
+    uint8_t mag_offset_x = (((uint16_t)calData[7] << 8) | calData[6]) & 0xFFFF;
+    uint8_t mag_offset_y = (((uint16_t)calData[9] << 8) | calData[8]) & 0xFFFF;
+    uint8_t mag_offset_z = (((uint16_t)calData[11] << 8) | calData[10]) & 0xFFFF;
+    uint8_t gyro_offset_x = (((uint16_t)calData[13] << 8) | calData[12]) & 0xFFFF;
+    uint8_t gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
+    uint8_t gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
+    uint8_t accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
+    uint8_t accel_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
+
+    fprintf(stdout, "TESTING bno_get_calibration_data()\n");
+    fprintf(stdout, "Reading into byte array:\n%d ", accel_offset_x);
+    fprintf(stdout, "\n%d ", accel_offset_y);
+    fprintf(stdout, "\n%d ", accel_offset_z);
+    fprintf(stdout, "\n%d ", mag_offset_x);
+    fprintf(stdout, "\n%d ", mag_offset_y);
+    fprintf(stdout, "\n%d ", mag_offset_z);
+    fprintf(stdout, "\n%d ", gyro_offset_x);
+    fprintf(stdout, "\n%d ", gyro_offset_y);
+    fprintf(stdout, "\n%d ", gyro_offset_z);
+    fprintf(stdout, "\n%d ", accel_radius);
+    fprintf(stdout, "\n%d ", accel_radius);
+
+    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, offsets, sizeof(bno055_offsets_t)) == -1)
+    {
+        fprintf(stderr, "Unable to read calibration offset data\n");
+        close(serial_fp);
+        return -1;
+    }
+
+    fprintf(stdout, "Reading into bno055_offsets_t struct:\n%d ", offsets->accel_offset_x);
+    fprintf(stdout, "\n%d ", offsets->accel_offset_y);
+    fprintf(stdout, "\n%d ", offsets->accel_offset_z);
+    fprintf(stdout, "\n%d ", offsets->mag_offset_x);
+    fprintf(stdout, "\n%d ", offsets->mag_offset_y);
+    fprintf(stdout, "\n%d ", offsets->mag_offset_z);
+    fprintf(stdout, "\n%d ", offsets->gyro_offset_x);
+    fprintf(stdout, "\n%d ", offsets->gyro_offset_y);
+    fprintf(stdout, "\n%d ", offsets->gyro_offset_z);
+    fprintf(stdout, "\n%d ", offsets->accel_radius);
+    fprintf(stdout, "\n%d ", offsets->accel_radius);
 
     // Return to normal operation mode
     if (bno_set_mode(op_mode) == -1)
