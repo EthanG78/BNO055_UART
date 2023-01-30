@@ -362,12 +362,55 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
 int bno_get_calibration_status(uint8_t *cal)
 {
     uint8_t calStatus = read_byte(BNO055_CALIB_STAT_ADDR);
-    
+
     cal[0] = (calStatus >> 6) & 0x03;
     cal[1] = (calStatus >> 4) & 0x03;
     cal[2] = (calStatus >> 2) & 0x03;
     cal[3] = calStatus & 0x03;
 
+    return 1;
+}
+
+// Fetch the sensor's calibration data and store this data in a
+// bno055_offsets_t struct passed as an argument. This data may be 
+// used to restore calibration using the bno_set_calibration()
+// function.
+//
+// Return 1 on success, -1 on error.
+int bno_get_calibration_data(bno055_offsets_t *offsets)
+{
+    // Enter configuration mode
+    if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
+    {
+        fprintf(stderr, "Error changing op mode to config mode\n");
+        close(serial_fp);
+        return -1;
+    }
+
+    // Read the calibration data into a 22 byte array since the offset
+    // data is stored at 22 contiguous bytes in memory
+    uint8_t calData[22];
+    if (read_bytes(serial_fp, calData, 22) == -1)
+    {
+        fprintf(stderr, "Unable to read calibration offset data\n");
+        close(serial_fp);
+        return -1;
+    }
+
+    // Must properly transfer data into bno055_offsets_t struct passed
+    // TODO:
+
+    return 1;
+}
+
+// Restore the sensor's calibration status using calibration offsets
+// and radii stored within a bno055_offsets_t struct returned from
+// bno_get_calibration_data() 
+//
+// Return 1 on success, -1 on error.
+int bno_set_calibration(bno055_offsets_t offsets)
+{
+    // TODO:
     return 1;
 }
 

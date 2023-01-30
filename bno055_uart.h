@@ -34,21 +34,21 @@
 /* Calibration offsets */
 typedef struct
 {
-    int16_t accel_offset_x;
-    int16_t accel_offset_y;
-    int16_t accel_offset_z;
+    uint16_t accel_offset_x;
+    uint16_t accel_offset_y;
+    uint16_t accel_offset_z;
 
-    int16_t mag_offset_x;
-    int16_t mag_offset_y;
-    int16_t mag_offset_z;
+    uint16_t mag_offset_x;
+    uint16_t mag_offset_y;
+    uint16_t mag_offset_z;
 
-    int16_t gyro_offset_x;
-    int16_t gyro_offset_y;
-    int16_t gyro_offset_z;
+    uint16_t gyro_offset_x;
+    uint16_t gyro_offset_y;
+    uint16_t gyro_offset_z;
 
-    int16_t accel_radius;
+    uint16_t accel_radius;
 
-    int16_t mag_radius;
+    uint16_t mag_radius;
 } bno055_offsets_t;
 
 /* Operation mode setting */
@@ -268,6 +268,10 @@ int bno_get_revision(uint8_t *rev);
 int bno_get_system_status(uint8_t *status, bool run_self_test);
 
 int bno_get_calibration_status(uint8_t *cal);
+
+int bno_get_calibration_data(bno055_offsets_t *offsets);
+
+int bno_set_calibration(bno055_offsets_t offsets);
 
 int bno_set_mode(bno055_opmode_t mode);
 
