@@ -27,6 +27,22 @@ int main()
 
     for (int i = 3; i >= 0; i--)
     {
+        switch (i)
+        {
+        case 3:
+            fprintf(stdout, "\tTo calibrate the Magnetometer, move the device through the air in a figure-8 pattern...\n");
+            break;
+        case 2:
+            fprintf(stdout, "\tTo calibrate the Accelerometer, rotate the device around an axis in 45 degree increments...\n");
+            break;
+        case 1:
+            fprintf(stdout, "\tTo calibrate the Gyroscope, place the device down and let rest still...\n");
+            break;
+        case 0:
+            fprintf(stdout, "\tCalibrating system\n");
+            break;
+        }
+
         // Loop until that specific calibration register reads fully calibrated
         while (cal[i] != 3)
         {
@@ -34,22 +50,6 @@ int main()
             {
                 fprintf(stderr, "Error fetching calibration status registers\n");
                 return 1;
-            }
-
-            switch (i)
-            {
-            case 3:
-                fprintf(stdout, "\tTo calibrate the Magnetometer, move the device through the air in a figure-8 pattern...\n");
-                break;
-            case 2:
-                fprintf(stdout, "\tTo calibrate the Accelerometer, rotate the device around an axis in 45 degree increments...\n");
-                break;
-            case 1:
-                fprintf(stdout, "\tTo calibrate the Gyroscope, place the device down and let rest still...\n");
-                break;
-            case 0:
-                fprintf(stdout, "\tCalibrating system\n");
-                break;
             }
         }
 
