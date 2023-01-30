@@ -275,7 +275,7 @@ int bno_get_calibration_status(uint8_t *cal);
 
 int bno_get_calibration_data(bno055_offsets_t *offsets);
 
-int bno_set_calibration(bno055_offsets_t offsets);
+int bno_set_calibration(bno055_offsets_t *offsets);
 
 int bno_set_mode(bno055_opmode_t mode);
 
