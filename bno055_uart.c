@@ -372,7 +372,7 @@ int bno_get_calibration_status(uint8_t *cal)
 }
 
 // Fetch the sensor's calibration data and store this data in a
-// bno055_offsets_t struct passed as an argument. This data may be 
+// bno055_offsets_t struct passed as an argument. This data may be
 // used to restore calibration using the bno_set_calibration()
 // function.
 //
@@ -398,14 +398,32 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     }
 
     // Must properly transfer data into bno055_offsets_t struct passed
-    // TODO:
+    offsets->accel_offset_x = (((uint16_t)calData[1] << 8) | calData[0]) & 0xFFFF;
+    offsets->accel_offset_y = (((uint16_t)calData[3] << 8) | calData[2]) & 0xFFFF;
+    offsets->accel_offset_z = (((uint16_t)calData[5] << 8) | calData[4]) & 0xFFFF;
+    offsets->mag_offset_x = (((uint16_t)calData[7] << 8) | calData[6]) & 0xFFFF;
+    offsets->mag_offset_y = (((uint16_t)calData[9] << 8) | calData[8]) & 0xFFFF;
+    offsets->mag_offset_z = (((uint16_t)calData[11] << 8) | calData[10]) & 0xFFFF;
+    offsets->gyro_offset_x = (((uint16_t)calData[13] << 8) | calData[12]) & 0xFFFF;
+    offsets->gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
+    offsets->gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
+    offsets->accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
+    offsets->accel_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
+
+    // Return to normal operation mode
+    if (bno_set_mode(op_mode) == -1)
+    {
+        fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
+        close(serial_fp);
+        return -1;
+    }
 
     return 1;
 }
 
 // Restore the sensor's calibration status using calibration offsets
 // and radii stored within a bno055_offsets_t struct returned from
-// bno_get_calibration_data() 
+// bno_get_calibration_data()
 //
 // Return 1 on success, -1 on error.
 int bno_set_calibration(bno055_offsets_t offsets)
