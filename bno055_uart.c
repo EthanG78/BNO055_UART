@@ -410,7 +410,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     uint8_t gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
     uint8_t gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
     uint8_t accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
-    uint8_t accel_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
+    uint8_t mag_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
 
     fprintf(stdout, "TESTING bno_get_calibration_data()\n");
     fprintf(stdout, "Reading into byte array:\n%d ", accel_offset_x);
@@ -423,9 +423,9 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     fprintf(stdout, "\n%d ", gyro_offset_y);
     fprintf(stdout, "\n%d ", gyro_offset_z);
     fprintf(stdout, "\n%d ", accel_radius);
-    fprintf(stdout, "\n%d ", accel_radius);
+    fprintf(stdout, "\n%d ", mag_radius);
 
-    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, (uint8_t *)&offsets, sizeof(bno055_offsets_t)) == -1)
+    if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, offsets, sizeof(bno055_offsets_t)) == -1)
     {
         fprintf(stderr, "Unable to read calibration offset data\n");
         close(serial_fp);
@@ -442,7 +442,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     fprintf(stdout, "\n%d ", offsets->gyro_offset_y);
     fprintf(stdout, "\n%d ", offsets->gyro_offset_z);
     fprintf(stdout, "\n%d ", offsets->accel_radius);
-    fprintf(stdout, "\n%d ", offsets->accel_radius);
+    fprintf(stdout, "\n%d ", offsets->mag_radius);
 
     // Return to normal operation mode
     if (bno_set_mode(op_mode) == -1)
@@ -472,7 +472,7 @@ int bno_set_calibration(bno055_offsets_t offsets)
 
     // Write the stored calibration offsets to their respective
     // registers on the bno055
-    if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, (uint8_t *)offsets, sizeof(bno055_offsets_t), true) == -1)
+    if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, &offsets, sizeof(bno055_offsets_t), true) == -1)
     {
         fprintf(stderr, "Unable to write calibration offset data\n");
         close(serial_fp);
