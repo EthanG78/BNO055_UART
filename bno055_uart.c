@@ -380,11 +380,16 @@ int bno_get_calibration_status(uint8_t *cal)
 // Return 1 on success, -1 on error.
 int bno_get_calibration_data(bno055_offsets_t *offsets)
 {
+    if (bno_fully_calibrated() != 1)
+    {
+        fprintf(stderr, "Unable to fetch calibration data, device is not fully calibrated\n");
+        return -1;
+    }
+
     // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
     {
         fprintf(stderr, "Error changing op mode to config mode\n");
-        close(serial_fp);
         return -1;
     }
 
@@ -396,7 +401,6 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     if (read_bytes(ACCEL_OFFSET_X_LSB_ADDR, calData, 22) == -1)
     {
         fprintf(stderr, "Unable to read calibration offset data\n");
-        close(serial_fp);
         return -1;
     }
 
@@ -417,7 +421,6 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
     if (bno_set_mode(op_mode) == -1)
     {
         fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
-        close(serial_fp);
         return -1;
     }
 
@@ -435,7 +438,6 @@ int bno_set_calibration(bno055_offsets_t *offsets)
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
     {
         fprintf(stderr, "Error changing op mode to config mode\n");
-        close(serial_fp);
         return -1;
     }
 
@@ -456,7 +458,6 @@ int bno_set_calibration(bno055_offsets_t *offsets)
     if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, calData, sizeof(bno055_offsets_t), true) == -1)
     {
         fprintf(stderr, "Unable to write calibration offset data\n");
-        close(serial_fp);
         return -1;
     }
 
@@ -464,7 +465,6 @@ int bno_set_calibration(bno055_offsets_t *offsets)
     if (bno_set_mode(op_mode) == -1)
     {
         fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
-        close(serial_fp);
         return -1;
     }
 

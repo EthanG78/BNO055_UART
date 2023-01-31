@@ -95,6 +95,12 @@ int main()
     fprintf(stdout, "\nAccel Radius: %d ", offsets->accel_radius);
     fprintf(stdout, "\nMag Radius: %d\n", offsets->mag_radius);
 
+
+    if (bno_set_calibration(&calOffsets) == -1)
+    {
+        return 1;
+    }
+
     if (bno_close() == -1)
     {
         return 1;
