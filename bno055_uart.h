@@ -32,14 +32,18 @@
 #define MAX_CMD_SEND_ATTEMPTS 10
 
 /* A structure to represent revisions */
-typedef struct
+#pragma pack(push)
+#pragma pack(1)
+struct bno055_rev_info_t_struct
 {
     uint8_t accel_rev;
     uint8_t mag_rev;
     uint8_t gyro_rev;
     uint16_t sw_rev;
     uint8_t bl_rev;
-} bno055_rev_info_t;
+};
+#pragma pack(pop)
+typedef struct bno055_rev_info_t_struct bno055_rev_info_t;
 
 /* Calibration offsets */
 #pragma pack(push)
@@ -267,7 +271,9 @@ typedef enum
     MAG_RADIUS_MSB_ADDR = 0x6A
 } bno055_register_t;
 
-int bno_get_revision(uint8_t *rev);
+int bno_set_mode(bno055_opmode_t mode);
+
+int bno_get_revision(bno055_rev_info_t *rev);
 
 int bno_get_system_status(uint8_t *status, bool run_self_test);
 
@@ -277,7 +283,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets);
 
 int bno_set_calibration(bno055_offsets_t *offsets);
 
-int bno_set_mode(bno055_opmode_t mode);
+int bno_fully_calibrated();
 
 int bno_init(char *serialPort, bno055_opmode_t mode);
 

@@ -249,24 +249,23 @@ int bno_set_mode(bno055_opmode_t mode)
     return 1;
 }
 
-// Get the revision information of the BNO055 chip. These values
-// are returned as a 6 btye array with the following format:
-//      rev[0] = Software revision least significant byte
-//      rev[1] = Software revision most significant byte
-//      rev[2] = Bootloader version
-//      rev[3] = Accelerometer ID
-//      rev[4] = Magnetometer ID
-//      rev[5] = Gyro ID
-//
+// Get the revision information of the BNO055 chip. These
+// values are returned through a bno055_rev_info_t struct passed
+// as argument.
 // Return 1 on success, -1 on error.
-int bno_get_revision(uint8_t *rev)
+int bno_get_revision(bno055_rev_info_t *rev)
 {
-    rev[0] = read_byte(BNO055_SW_REV_ID_LSB_ADDR);
-    rev[1] = read_byte(BNO055_SW_REV_ID_MSB_ADDR);
-    rev[2] = read_byte(BNO055_BL_REV_ID_ADDR);
-    rev[3] = read_byte(BNO055_ACCEL_REV_ID_ADDR);
-    rev[4] = read_byte(BNO055_MAG_REV_ID_ADDR);
-    rev[5] = read_byte(BNO055_GYRO_REV_ID_ADDR);
+    memset(rev, 0, sizeof(bno055_rev_info_t));
+
+    rev->accel_rev = read_byte(BNO055_ACCEL_REV_ID_ADDR);
+    rev->gyro_rev = read_byte(BNO055_GYRO_REV_ID_ADDR);
+    rev->mag_rev = read_byte(BNO055_MAG_REV_ID_ADDR);
+    rev->bl_rev = read_byte(BNO055_BL_REV_ID_ADDR);
+
+    uint8_t swLsb = read_byte(BNO055_SW_REV_ID_LSB_ADDR);
+    uint8_t swMsb = read_byte(BNO055_SW_REV_ID_MSB_ADDR);
+
+    rev->sw_rev = (((uint16_t)swMsb << 8) | swLsb) & 0xFFFF;
 
     return 1;
 }
@@ -486,6 +485,42 @@ int bno_set_calibration(bno055_offsets_t *offsets)
     }
 
     return 1;
+}
+
+// Check if BNO055 sensors are fully calibrated
+// based on the current operating mode. This code is adapted
+// from Adafruit's Adafruit_BNO055 Arduino driver.
+//
+// Return 1 if fully calibrated, -1 otherwise
+int bno_fully_calibrated()
+{
+    uint8_t cal[4];
+    if (bno_get_calibration_status(&cal) == -1)
+    {
+        fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
+        return -1;
+    }
+
+    switch (op_mode)
+    {
+    case OPERATION_MODE_ACCONLY:
+        return (cal[2] == 3);
+    case OPERATION_MODE_MAGONLY:
+        return (cal[3] == 3);
+    case OPERATION_MODE_GYRONLY:
+    case OPERATION_MODE_M4G: /* No magnetometer calibration required. */
+        return (cal[1] == 3);
+    case OPERATION_MODE_ACCMAG:
+    case OPERATION_MODE_COMPASS:
+        return (cal[2] == 3 && cal[3] == 3);
+    case OPERATION_MODE_ACCGYRO:
+    case OPERATION_MODE_IMUPLUS:
+        return (cal[2] == 3 && cal[1] == 3);
+    case OPERATION_MODE_MAGGYRO:
+        return (cal[3] == 3 && cal[1] == 3);
+    default:
+        return (cal[0] == 3 && cal[1] == 3 && cal[2] == 3 && cal[3] == 3);
+    }
 }
 
 // Initialize communication with a BNO055 IMU over serial
