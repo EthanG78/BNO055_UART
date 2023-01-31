@@ -83,6 +83,18 @@ int main()
         return 1;
     }
 
+    fprintf(stdout, "\nAccel Offsets:\n\tX: %d ", offsets->accel_offset_x);
+    fprintf(stdout, "\n\tY: %d ", offsets->accel_offset_y);
+    fprintf(stdout, "\n\tZ: %d ", offsets->accel_offset_z);
+    fprintf(stdout, "\nMag Offsets:\n\tX: %d ", offsets->mag_offset_x);
+    fprintf(stdout, "\n\tY: %d ", offsets->mag_offset_y);
+    fprintf(stdout, "\n\tZ: %d ", offsets->mag_offset_z);
+    fprintf(stdout, "\nGyro Offsets:\n\tX: %d ", offsets->gyro_offset_x);
+    fprintf(stdout, "\n\tY: %d ", offsets->gyro_offset_y);
+    fprintf(stdout, "\n\tZ: %d ", offsets->gyro_offset_z);
+    fprintf(stdout, "\nAccel Radius: %d ", offsets->accel_radius);
+    fprintf(stdout, "\nMag Radius: %d\n", offsets->mag_radius);
+
     if (bno_close() == -1)
     {
         return 1;

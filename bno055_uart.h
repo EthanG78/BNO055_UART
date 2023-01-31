@@ -32,23 +32,17 @@
 #define MAX_CMD_SEND_ATTEMPTS 10
 
 /* A structure to represent revisions */
-#pragma pack(push)
-#pragma pack(1)
-struct bno055_rev_info_t_struct
+typedef struct 
 {
     uint8_t accel_rev;
     uint8_t mag_rev;
     uint8_t gyro_rev;
     uint16_t sw_rev;
     uint8_t bl_rev;
-};
-#pragma pack(pop)
-typedef struct bno055_rev_info_t_struct bno055_rev_info_t;
+} bno055_rev_info_t;
 
 /* Calibration offsets */
-#pragma pack(push)
-#pragma pack(1)
-struct bno055_offsets_t_struct
+typedef struct
 {
     uint16_t accel_offset_x;
     uint16_t accel_offset_y;
@@ -65,9 +59,7 @@ struct bno055_offsets_t_struct
     uint16_t accel_radius;
 
     uint16_t mag_radius;
-};
-#pragma pack(pop)
-typedef struct bno055_offsets_t_struct bno055_offsets_t;
+} bno055_offsets_t;
 
 /* Operation mode setting */
 typedef enum

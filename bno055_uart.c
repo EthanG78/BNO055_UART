@@ -324,6 +324,8 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
             return -1;
         }
 
+        delay(25);
+
         // Perform self test
         uint8_t trigger = read_byte(BNO055_SYS_TRIGGER_ADDR);
         if (write_byte(BNO055_SYS_TRIGGER_ADDR, trigger | 0x10, true) == -1)
@@ -386,6 +388,8 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
         return -1;
     }
 
+    delay(25);
+
     // Read the calibration data into a 22 byte array since the offset
     // data is stored at 22 contiguous bytes in memory
     uint8_t calData[22];
@@ -396,47 +400,18 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
         return -1;
     }
 
-    // TESTING
-
     // Must properly transfer data into bno055_offsets_t struct passed
-    uint8_t accel_offset_x = (((uint16_t)calData[1] << 8) | calData[0]) & 0xFFFF;
-    uint8_t accel_offset_y = (((uint16_t)calData[3] << 8) | calData[2]) & 0xFFFF;
-    uint8_t accel_offset_z = (((uint16_t)calData[5] << 8) | calData[4]) & 0xFFFF;
-    uint8_t mag_offset_x = (((uint16_t)calData[7] << 8) | calData[6]) & 0xFFFF;
-    uint8_t mag_offset_y = (((uint16_t)calData[9] << 8) | calData[8]) & 0xFFFF;
-    uint8_t mag_offset_z = (((uint16_t)calData[11] << 8) | calData[10]) & 0xFFFF;
-    uint8_t gyro_offset_x = (((uint16_t)calData[13] << 8) | calData[12]) & 0xFFFF;
-    uint8_t gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
-    uint8_t gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
-    uint8_t accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
-    uint8_t mag_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
-
-    fprintf(stdout, "TESTING bno_get_calibration_data()\n");
-    fprintf(stdout, "Reading into byte array:\n%d ", accel_offset_x);
-    fprintf(stdout, "\n%d ", accel_offset_y);
-    fprintf(stdout, "\n%d ", accel_offset_z);
-    fprintf(stdout, "\n%d ", mag_offset_x);
-    fprintf(stdout, "\n%d ", mag_offset_y);
-    fprintf(stdout, "\n%d ", mag_offset_z);
-    fprintf(stdout, "\n%d ", gyro_offset_x);
-    fprintf(stdout, "\n%d ", gyro_offset_y);
-    fprintf(stdout, "\n%d ", gyro_offset_z);
-    fprintf(stdout, "\n%d ", accel_radius);
-    fprintf(stdout, "\n%d\n", mag_radius);
-
-    offsets = (bno055_offsets_t *)&calData;
-
-    fprintf(stdout, "Reading into bno055_offsets_t struct:\n%d ", offsets->accel_offset_x);
-    fprintf(stdout, "\n%d ", offsets->accel_offset_y);
-    fprintf(stdout, "\n%d ", offsets->accel_offset_z);
-    fprintf(stdout, "\n%d ", offsets->mag_offset_x);
-    fprintf(stdout, "\n%d ", offsets->mag_offset_y);
-    fprintf(stdout, "\n%d ", offsets->mag_offset_z);
-    fprintf(stdout, "\n%d ", offsets->gyro_offset_x);
-    fprintf(stdout, "\n%d ", offsets->gyro_offset_y);
-    fprintf(stdout, "\n%d ", offsets->gyro_offset_z);
-    fprintf(stdout, "\n%d ", offsets->accel_radius);
-    fprintf(stdout, "\n%d\n", offsets->mag_radius);
+    offsets->accel_offset_x = (((uint16_t)calData[1] << 8) | calData[0]) & 0xFFFF;
+    offsets->accel_offset_y = (((uint16_t)calData[3] << 8) | calData[2]) & 0xFFFF;
+    offsets->accel_offset_z = (((uint16_t)calData[5] << 8) | calData[4]) & 0xFFFF;
+    offsets->mag_offset_x = (((uint16_t)calData[7] << 8) | calData[6]) & 0xFFFF;
+    offsets->mag_offset_y = (((uint16_t)calData[9] << 8) | calData[8]) & 0xFFFF;
+    offsets->mag_offset_z = (((uint16_t)calData[11] << 8) | calData[10]) & 0xFFFF;
+    offsets->gyro_offset_x = (((uint16_t)calData[13] << 8) | calData[12]) & 0xFFFF;
+    offsets->gyro_offset_y = (((uint16_t)calData[15] << 8) | calData[14]) & 0xFFFF;
+    offsets->gyro_offset_z = (((uint16_t)calData[17] << 8) | calData[16]) & 0xFFFF;
+    offsets->accel_radius = (((uint16_t)calData[19] << 8) | calData[18]) & 0xFFFF;
+    offsets->mag_radius = (((uint16_t)calData[21] << 8) | calData[20]) & 0xFFFF;
 
     // Return to normal operation mode
     if (bno_set_mode(op_mode) == -1)
@@ -464,8 +439,17 @@ int bno_set_calibration(bno055_offsets_t *offsets)
         return -1;
     }
 
+    delay(25);
+
     // Store calibration offsets in byte array
     uint8_t *calData = (uint8_t *)offsets;
+
+    // TESTING:
+    for (int i = 0; i < sizeof(bno055_offsets_t); i++)
+    {
+        fprintf(stdout, "%d\n", calData[i]);
+    }
+    fprintf(stdout, "\n");
 
     // Write the stored calibration offsets to their respective
     // registers on the bno055
@@ -569,6 +553,8 @@ int bno_init(char *serialPort, bno055_opmode_t mode)
         close(serial_fp);
         return -1;
     }
+
+    delay(25);
 
     // Make sure we are on address page 0
     if (write_byte(BNO055_PAGE_ID_ADDR, 0x00, true) == -1)
