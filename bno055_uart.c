@@ -320,7 +320,6 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
         if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
         {
             fprintf(stderr, "Error changing op mode to config mode\n");
-            close(serial_fp);
             return -1;
         }
 
@@ -331,7 +330,6 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
         if (write_byte(BNO055_SYS_TRIGGER_ADDR, trigger | 0x10, true) == -1)
         {
             fprintf(stderr, "Failed to perform self test\n");
-            close(serial_fp);
             return -1;
         }
 
@@ -344,7 +342,6 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
         if (bno_set_mode(op_mode) == -1)
         {
             fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
-            close(serial_fp);
             return -1;
         }
     }
