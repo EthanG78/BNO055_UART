@@ -18,7 +18,6 @@ bno055_opmode_t op_mode = OPERATION_MODE_NDOF;
 // Return 1 on success, -1 on error.
 int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 {
-    memset(resp[0], 0, 2);
     int nAttempts = 0;
     while (1)
     {
@@ -157,8 +156,6 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 // Return 1 on success, -1 on error.
 int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
 {
-    memset(bytes[0], 0, nBytes);
-
     // Build the read command with the following format:
     // Byte 1: Start Byte 0xAA
     // Byte 2: Read Command 0x01
@@ -258,8 +255,6 @@ int bno_set_mode(bno055_opmode_t mode)
 // Return 1 on success, -1 on error.
 int bno_get_revision(bno055_rev_info_t *rev)
 {
-    memset(*rev, 0, sizeof(bno055_rev_info_t));
-
     rev->accel_rev = read_byte(BNO055_ACCEL_REV_ID_ADDR);
     rev->gyro_rev = read_byte(BNO055_GYRO_REV_ID_ADDR);
     rev->mag_rev = read_byte(BNO055_MAG_REV_ID_ADDR);
@@ -362,7 +357,7 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
 // Return 1 on success, -1 on error.
 int bno_get_calibration_status(uint8_t *cal)
 {
-    memset(cal[0], 0, 4);
+    memset(cal, 0, 4);
 
     uint8_t calStatus = read_byte(BNO055_CALIB_STAT_ADDR);
 
@@ -388,7 +383,7 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
         return -1;
     }
 
-    memset(*offsets, 0, sizeof(bno055_offsets_t));
+    memset(offsets, 0, sizeof(bno055_offsets_t));
 
     // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
@@ -554,7 +549,7 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
 // Return 1 on success, -1 on error.
 int bno_read_euler(bno055_vector_t *euler)
 {
-    memset(*euler, 0, sizeof(bno055_vector_t));
+    memset(euler, 0, sizeof(bno055_vector_t));
 
     int16_t data[3];
     if (read_vector(BNO055_EULER_H_LSB_ADDR, data, 3) == -1)
