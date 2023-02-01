@@ -22,11 +22,11 @@ int main()
     }
 
     fprintf(stdout, "BNO055 Revision Information:");
-    fprintf(stdout, "\n\tSoftware revision: 0x%02x%02x", rev[1], rev[0]);
-    fprintf(stdout, "\n\tBootloader version: 0x%02x", rev[2]);
-    fprintf(stdout, "\n\tAccelerometer ID: 0x%02x", rev[3]);
-    fprintf(stdout, "\n\tMagnetometer ID: 0x%02x", rev[4]);
-    fprintf(stdout, "\n\tGyro ID: 0x%02x\n\n", rev[5]);
+    fprintf(stdout, "\n\tSoftware revision: 0x%04x", rev.sw_rev);
+    fprintf(stdout, "\n\tBootloader version: 0x%02x", rev.bl_rev);
+    fprintf(stdout, "\n\tAccelerometer ID: 0x%02x", rev.accel_rev);
+    fprintf(stdout, "\n\tMagnetometer ID: 0x%02x", rev.mag_rev);
+    fprintf(stdout, "\n\tGyro ID: 0x%02x\n\n", rev.gyro_rev);
 
 
     uint8_t status[3];
