@@ -14,8 +14,8 @@ int main()
         return 1;
     }
 
-    uint8_t rev[6];
-    if (bno_get_revision(rev) == -1)
+    bno055_rev_info_t rev;
+    if (bno_get_revision(&rev) == -1)
     {
         fprintf(stderr, "Failed to get revision information from bno055\n");
         return 1;
