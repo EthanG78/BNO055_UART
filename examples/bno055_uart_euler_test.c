@@ -1,5 +1,5 @@
 /*
- * bno055_uart_read_vector_test.c
+ * bno055_uart_euler_test.c
  * Test reading abolsute orientation
  * as euler angles from the BNO055.
  * Author: Ethan Garnier
