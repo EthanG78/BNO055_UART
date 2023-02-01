@@ -24,7 +24,7 @@ int main()
 
     fprintf(stdout, "\n-----------\n");
     fprintf(stdout, "Calibrating BNO055 Device:\n");
-    fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d", cal[3], cal[2], cal[1], cal[0]);
+    fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d\n", cal[3], cal[2], cal[1], cal[0]);
 
     for (int i = 3; i >= 0; i--)
     {
@@ -53,7 +53,7 @@ int main()
                 return 1;
             }
 
-            fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d", cal[3], cal[2], cal[1], cal[0]);
+            fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d\n", cal[3], cal[2], cal[1], cal[0]);
 
             delay(1000);
         }
