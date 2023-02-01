@@ -18,6 +18,7 @@ bno055_opmode_t op_mode = OPERATION_MODE_NDOF;
 // Return 1 on success, -1 on error.
 int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 {
+    memset(resp, 0, 2);
     int nAttempts = 0;
     while (1)
     {
@@ -92,6 +93,8 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 // Return 1 on success, -1 on error.
 int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack)
 {
+    memset(bytes, 0, nBytes);
+
     // Build the write command with the following format:
     // Byte 1: Start Byte 0xAA
     // Byte 2: Write Command 0x00
@@ -156,6 +159,8 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
 // Return 1 on success, -1 on error.
 int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
 {
+    memset(bytes, 0, nBytes);
+
     // Build the read command with the following format:
     // Byte 1: Start Byte 0xAA
     // Byte 2: Read Command 0x01
@@ -443,13 +448,6 @@ int bno_set_calibration(bno055_offsets_t *offsets)
     // Store calibration offsets in byte array
     uint8_t *calData = (uint8_t *)offsets;
 
-    // TESTING:
-    for (int i = 0; i < sizeof(bno055_offsets_t); i++)
-    {
-        fprintf(stdout, "%d\n", calData[i]);
-    }
-    fprintf(stdout, "\n");
-
     // Write the stored calibration offsets to their respective
     // registers on the bno055
     if (write_bytes(ACCEL_OFFSET_X_LSB_ADDR, calData, sizeof(bno055_offsets_t), true) == -1)
@@ -502,6 +500,61 @@ int bno_fully_calibrated()
     default:
         return (cal[0] == 3 && cal[1] == 3 && cal[2] == 3 && cal[3] == 3);
     }
+}
+
+// TODO: SHOULD DATA BE int16_t????
+// Read n 16-bit signed values starting at the provided
+// register address. Returns these values in a size n array
+// of int16_t values.
+//
+// Return 1 on success, -1 on error.
+int read_vector(bno055_register_t addr, int16_t *data, int n)
+{
+    int nBytes = n * 2;
+    uint8_t vector[nBytes];
+    if (read_bytes(addr, vector, nBytes) == -1)
+    {
+        fprintf(stderr, "Unable to read vector bytes at address %02x\n", addr);
+        return -1;
+    }
+
+    // Convert bytes to signed 16bit values
+    uint16_t temp = 0;
+    for (int i = 0; i < n; i++)
+    {
+        temp = ((vector[i * 2 + 1] << 8) | vector[i * 2]) & 0xFFFF;
+
+        // Since we are going from unsigned to signed values,
+        // we must be careful to check that we aren't above the
+        // maximum 16 bit signed value possible
+        if (temp > 32767)
+        {
+            data[i] = temp - 65536;
+        }
+        else
+        {
+            data[i] = temp;
+        }
+    }
+}
+
+// Read the current absolute orientation data as heading, pitch,
+// and roll euler angles in degrees and store in a bno055_vector_t
+// struct passed as an argument.
+//
+// Return 1 on success, -1 on error.
+int bno_read_euler(bno055_vector_t *euler)
+{
+    int16_t data[3];
+    if (read_vector(BNO055_EULER_H_LSB_ADDR, 3) == -1)
+    {
+        fprintf(stderr, "Unable to read euler vector\n");
+        return -1;
+    }
+
+    euler->heading = (float)data[0] / 16.0;
+    euler->roll = (float)data[1] / 16.0;
+    euler->pitch = (float)data[2] / 16.0;
 }
 
 // Initialize communication with a BNO055 IMU over serial

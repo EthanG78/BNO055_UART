@@ -1,7 +1,7 @@
 /*
- * bno055_uart_cal_restore_test.c
- * Test getting calibration offsets from BNO055
- * sensors and restoring to their saved state.
+ * bno055_uart_read_vector_test.c
+ * Test reading abolsute orientation
+ * as euler angles from the BNO055.
  * Author: Ethan Garnier
  */
 #include <stdio.h>
@@ -75,30 +75,21 @@ int main()
         }
     }
 
-    // Get the calibration offsets and store within
-    // a bno055_offsets_t struct.
-    bno055_offsets_t calOffsets;
-    if (bno_get_calibration_data(&calOffsets) == -1)
+    // Read vector data and printout
+    // absolute orientation
+    bno055_vector_t euler;
+    while (1)
     {
-        return 1;
-    }
+        if (bno_read_euler(&euler) == -1)
+        {
+            break;
+        }
 
-    fprintf(stdout, "\nAccel Offsets:\n\tX: %d ", calOffsets.accel_offset_x);
-    fprintf(stdout, "\n\tY: %d ", calOffsets.accel_offset_y);
-    fprintf(stdout, "\n\tZ: %d ", calOffsets.accel_offset_z);
-    fprintf(stdout, "\nMag Offsets:\n\tX: %d ", calOffsets.mag_offset_x);
-    fprintf(stdout, "\n\tY: %d ", calOffsets.mag_offset_y);
-    fprintf(stdout, "\n\tZ: %d ", calOffsets.mag_offset_z);
-    fprintf(stdout, "\nGyro Offsets:\n\tX: %d ", calOffsets.gyro_offset_x);
-    fprintf(stdout, "\n\tY: %d ", calOffsets.gyro_offset_y);
-    fprintf(stdout, "\n\tZ: %d ", calOffsets.gyro_offset_z);
-    fprintf(stdout, "\nAccel Radius: %d ", calOffsets.accel_radius);
-    fprintf(stdout, "\nMag Radius: %d\n", calOffsets.mag_radius);
+        fprintf(stdout, "\nHeading: %.2f\n", euler.heading);
+        fprintf(stdout, "Roll: %.2f\n", euler.roll);
+        fprintf(stdout, "Pitch: %.2f\n", euler.pitch);
 
-    // Restore the calibration offsets
-    if (bno_set_calibration(&calOffsets) == -1)
-    {
-        return 1;
+        delay(500);
     }
 
     if (bno_close() == -1)

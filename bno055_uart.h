@@ -31,8 +31,34 @@
 /* Maximum number of attempts to resend a cmd*/
 #define MAX_CMD_SEND_ATTEMPTS 10
 
+/* A structure to represent data vector */
+typedef struct
+{
+    union
+    {
+        // Array of length 3
+        float v[3];
+        // Structure with x, y, and z components
+        struct
+        {
+            float x;
+            float y;
+            float z;
+        };
+        // Structure with heading, pitch, and roll orientation
+        struct
+        {
+            // TODO: These will need to be rearranged
+            float heading;
+            float roll;
+            float pitch;
+        };
+    }
+
+} bno055_vector_t;
+
 /* A structure to represent revisions */
-typedef struct 
+typedef struct
 {
     uint8_t accel_rev;
     uint8_t mag_rev;
@@ -276,6 +302,8 @@ int bno_get_calibration_data(bno055_offsets_t *offsets);
 int bno_set_calibration(bno055_offsets_t *offsets);
 
 int bno_fully_calibrated();
+
+int bno_read_euler(bno055_vector_t *euler);
 
 int bno_init(char *serialPort, bno055_opmode_t mode);
 
