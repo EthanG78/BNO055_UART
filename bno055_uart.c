@@ -141,7 +141,7 @@ int write_byte(bno055_register_t addr, uint8_t byte, bool ack)
     if (write_bytes(addr, bytes, 0x01, ack) == -1)
     {
         // wait and try again
-        delay(1000);
+        delay(500);
         if (write_bytes(addr, bytes, 0x01, ack) == -1)
         {
             return -1;
@@ -517,7 +517,7 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
     if (read_bytes(addr, vector, nBytes) == -1)
     {
         // Wait and try again
-        delay(500)
+        delay(500);
         if (read_bytes(addr, vector, nBytes) == -1)
         {
             fprintf(stderr, "Unable to read vector bytes at address 0x%02x\n", addr);
@@ -554,7 +554,7 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
 // Return 1 on success, -1 on error.
 int bno_read_euler(bno055_vector_t *euler)
 {
-    memset(euler, 0, sizeof(bno055_vector_t))
+    memset(euler, 0, sizeof(bno055_vector_t));
 
     int16_t data[3];
     if (read_vector(BNO055_EULER_H_LSB_ADDR, data, 3) == -1)
