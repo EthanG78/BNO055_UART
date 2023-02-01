@@ -182,8 +182,18 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
         return -1;
     }
 
+    // Busy loop while we wait for data
+    while (!serialDataAvail(serial_fp)){}
+
+    // Read nBytes of data
+    if (read(serial_fp, bytes, (int)nBytes) == -1)
+    {
+        perror("read_bytes() unable to read bytes:");
+        return -1;
+    }
+
     // TODO: This is not ideal... we are calling read() for EVERY BTYE.
-    int byteIdx = 0;
+    /*int byteIdx = 0;
     while (serialDataAvail(serial_fp) && byteIdx < nBytes)
     {
         if (read(serial_fp, &bytes[byteIdx], 1) == -1)
@@ -191,7 +201,7 @@ int read_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes)
             perror("read_bytes() unable to read bytes:");
             return -1;
         }
-    }
+    }*/
 
     // Read the bytes we requested
     /*if (read(serial_fp, bytes, (int)nBytes) == -1)
