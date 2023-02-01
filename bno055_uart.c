@@ -93,8 +93,6 @@ int send_serial_cmd(uint8_t *cmd, int nCmdBytes, uint8_t *resp, bool ack)
 // Return 1 on success, -1 on error.
 int write_bytes(bno055_register_t addr, uint8_t *bytes, uint8_t nBytes, bool ack)
 {
-    memset(bytes, 0, nBytes);
-
     // Build the write command with the following format:
     // Byte 1: Start Byte 0xAA
     // Byte 2: Write Command 0x00
