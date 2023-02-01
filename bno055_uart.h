@@ -53,8 +53,7 @@ typedef struct
             float roll;
             float pitch;
         };
-    }
-
+    };
 } bno055_vector_t;
 
 /* A structure to represent revisions */
