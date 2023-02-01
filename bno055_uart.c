@@ -216,7 +216,7 @@ uint8_t read_byte(bno055_register_t addr)
     if (read_bytes(addr, readByte, 0x01) == -1)
     {
         // Wait and try again
-        delay(1000);
+        delay(500);
         if (read_bytes(addr, readByte, 0x01) == -1)
         {
             fprintf(stderr, "Error reading single byte\n");
@@ -362,6 +362,8 @@ int bno_get_system_status(uint8_t *status, bool run_self_test)
 // Return 1 on success, -1 on error.
 int bno_get_calibration_status(uint8_t *cal)
 {
+    memset(cal, 0, 4);
+
     uint8_t calStatus = read_byte(BNO055_CALIB_STAT_ADDR);
 
     cal[0] = (calStatus >> 6) & 0x03;
@@ -385,6 +387,8 @@ int bno_get_calibration_data(bno055_offsets_t *offsets)
         fprintf(stderr, "Unable to fetch calibration data, device is not fully calibrated\n");
         return -1;
     }
+
+    memset(offsets, 0, sizeof(bno055_offsets_t));
 
     // Enter configuration mode
     if (bno_set_mode(OPERATION_MODE_CONFIG) == -1)
@@ -512,8 +516,13 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
     uint8_t vector[nBytes];
     if (read_bytes(addr, vector, nBytes) == -1)
     {
-        fprintf(stderr, "Unable to read vector bytes at address %02x\n", addr);
-        return -1;
+        // Wait and try again
+        delay(500)
+        if (read_bytes(addr, vector, nBytes) == -1)
+        {
+            fprintf(stderr, "Unable to read vector bytes at address 0x%02x\n", addr);
+            return -1;
+        }
     }
 
     // Convert bytes to signed 16bit values
@@ -545,6 +554,8 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
 // Return 1 on success, -1 on error.
 int bno_read_euler(bno055_vector_t *euler)
 {
+    memset(euler, 0, sizeof(bno055_vector_t))
+
     int16_t data[3];
     if (read_vector(BNO055_EULER_H_LSB_ADDR, data, 3) == -1)
     {
@@ -555,7 +566,7 @@ int bno_read_euler(bno055_vector_t *euler)
     euler->heading = (float)data[0] / 16.0;
     euler->roll = (float)data[1] / 16.0;
     euler->pitch = (float)data[2] / 16.0;
-    
+
     return 1;
 }
 

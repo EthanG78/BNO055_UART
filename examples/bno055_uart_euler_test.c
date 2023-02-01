@@ -14,82 +14,23 @@ int main()
         return 1;
     }
 
-    // Calibrate the sensors first
-    uint8_t cal[4];
-    if (bno_get_calibration_status(cal) == -1)
-    {
-        fprintf(stderr, "Error fetching calibration status registers\n");
-        return 1;
-    }
-
-    fprintf(stdout, "\n-----------\n");
-    fprintf(stdout, "Calibrating BNO055 Device:\n");
-    fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d\n", cal[3], cal[2], cal[1], cal[0]);
-
-    for (int i = 3; i >= 0; i--)
-    {
-        switch (i)
-        {
-        case 3:
-            fprintf(stdout, "\tTo calibrate the Magnetometer, move the device through the air in a figure-8 pattern...\n");
-            break;
-        case 2:
-            fprintf(stdout, "\tTo calibrate the Accelerometer, rotate the device around an axis in 45 degree increments...\n");
-            break;
-        case 1:
-            fprintf(stdout, "\tTo calibrate the Gyroscope, place the device down and let rest still...\n");
-            break;
-        case 0:
-            fprintf(stdout, "\tCalibrating system\n");
-            break;
-        }
-
-        // Loop until that specific calibration register reads fully calibrated
-        while (cal[i] != 3)
-        {
-            if (bno_get_calibration_status(cal) == -1)
-            {
-                fprintf(stderr, "Error fetching calibration status registers\n");
-                return 1;
-            }
-
-            fprintf(stdout, "Current status:\n\tMagnetometer: %d\n\tAccelerometer: %d\n\tGyroscope: %d\n\tSystem: %d\n", cal[3], cal[2], cal[1], cal[0]);
-
-            delay(1000);
-        }
-
-        switch (i)
-        {
-        case 3:
-            fprintf(stdout, "Done calibrating magnetometer\n");
-            break;
-        case 2:
-            fprintf(stdout, "Done calibrating accelerometer\n");
-            break;
-        case 1:
-            fprintf(stdout, "Done calibrating gyroscope\n");
-            break;
-        case 0:
-            fprintf(stdout, "Done calibrating system\n");
-            break;
-        }
-    }
-
     // Read vector data and printout
-    // absolute orientation
+    // absolute orientation along with
+    // calibration status
     bno055_vector_t euler;
+    uint8_t cal[4];
     while (1)
     {
         if (bno_read_euler(&euler) == -1)
-        {
             break;
-        }
 
-        fprintf(stdout, "\nHeading: %.2f\n", euler.heading);
-        fprintf(stdout, "Roll: %.2f\n", euler.roll);
-        fprintf(stdout, "Pitch: %.2f\n", euler.pitch);
+        if (bno_get_calibration_status(cal) == -1)
+            break;
 
-        delay(500);
+        fprintf(stdout, "Heading=%.2f Roll=%.2f Pitch=%.2f\tSys_cal=%d Gyro_cal=%d  Accel_cal=%d  Mag_cal=%d\n",
+                euler.heading, euler.roll, euler.pitch, cal[0], cal[1], cal[2], cal[3]);
+
+        delay(1000);
     }
 
     if (bno_close() == -1)
