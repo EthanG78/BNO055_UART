@@ -476,7 +476,7 @@ int bno_set_calibration(bno055_offsets_t *offsets)
 int bno_fully_calibrated()
 {
     uint8_t cal[4];
-    if (bno_get_calibration_status(&cal) == -1)
+    if (bno_get_calibration_status(cal) == -1)
     {
         fprintf(stderr, "Error changing op mode to %02x mode\n", op_mode);
         return -1;
