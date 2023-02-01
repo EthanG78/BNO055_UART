@@ -536,6 +536,8 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
             data[i] = temp;
         }
     }
+
+    return 1;
 }
 
 // Read the current absolute orientation data as heading, pitch,
@@ -546,7 +548,7 @@ int read_vector(bno055_register_t addr, int16_t *data, int n)
 int bno_read_euler(bno055_vector_t *euler)
 {
     int16_t data[3];
-    if (read_vector(BNO055_EULER_H_LSB_ADDR, 3) == -1)
+    if (read_vector(BNO055_EULER_H_LSB_ADDR, data, 3) == -1)
     {
         fprintf(stderr, "Unable to read euler vector\n");
         return -1;
@@ -555,6 +557,8 @@ int bno_read_euler(bno055_vector_t *euler)
     euler->heading = (float)data[0] / 16.0;
     euler->roll = (float)data[1] / 16.0;
     euler->pitch = (float)data[2] / 16.0;
+    
+    return 1;
 }
 
 // Initialize communication with a BNO055 IMU over serial
